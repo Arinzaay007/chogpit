@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHOGPIT — Get Your Hero</title>
+<link rel="icon" href="/assets/chogbadge.jpg"><link rel="stylesheet" href="/style.css">
+<style>
+.claim-wrap{max-width:480px;margin:40px auto;padding:24px;background:var(--cream);border:3px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink)}
+.hero-preview{height:110px;border:2px solid var(--ink);border-radius:10px;display:grid;place-items:center;font:1000 28px var(--ui);margin:12px 0}
+.claim-btn{width:100%;min-height:48px;margin-top:10px;background:var(--yellow);border:2px solid var(--ink);border-radius:10px;font:1000 12px var(--mono);box-shadow:0 4px 0 var(--ink)}
+</style>
+</head>
+<body style="background:#0f1913">
+<div class="claim-wrap">
+  <div class="eyebrow"><span class="eyebrow-star">✦</span> CHOGPIT HERO CLAIM <span>1/1</span></div>
+  <h1 style="margin:12px 0 8px;font:1000 30px var(--ui)">YOUR MINT = YOUR FIGHTER</h1>
+  <p style="font:700 11px var(--ui);color:#5d5260">Email → auto Privy wallet → random CHOG-inspired hero (Background/Body/Eyes/Aura → weapon/speed). Guest can skip, but claimed hero is your fighter in PvP/co-op. Sponsor pays mint gas — you sign free EIP-712 consent only.</p>
+  <div id="signup-mount"></div>
+  <div class="hero-preview" id="heroPreview" style="background:#fff7d6">◎ Default Raider</div>
+  <div id="heroMeta" style="font:900 8px var(--mono);color:#6b5a73;text-align:center">No hero yet — register first</div>
+  <button class="claim-btn" id="claimBtn" disabled>CLAIM RANDOM HERO ↗</button>
+  <button class="claim-btn" id="playBtn" style="background:white;display:none">PLAY WITH THIS HERO →</button>
+  <p style="margin-top:10px;font:700 9px var(--ui);color:#7a6a73"><b>Already have hero?</b> <a href="/">Go to lobby</a> · Guest: <a href="/?guest=1">Play as Default</a>. Holder of 40-cap Raider Pass <code>0xf927c92a4305ec63fd667d03301498df33526c0c</code> gets CHOG auto-pay at 50. Vault <code>0x371aa93574af4bc140537fe21fa656b788239149</code> FUNDED 1,000/1,000.</p>
+<div class="hero-modes" style="margin-top:12px;border-top:2px solid var(--ink);padding-top:10px"><b style="font:900 9px var(--mono)">NEXT → CHOOSE YOUR PIT:</b><div style="display:flex;gap:6px;margin-top:6px"><button type="button" id="goRaid" class="claim-btn" style="flex:1;background:var(--yellow)">RAID SOLO ↗</button><button type="button" id="goFriends" class="claim-btn" style="flex:1;background:#fff">WITH FRIENDS →</button></div><small style="display:block;margin-top:6px;color:#6b5a73;font:700 8px var(--ui)">Friends: host picks <b>vs BOT</b> or <b>vs EACH OTHER</b> • 3 min • 2 supplies • 5 lives • Loot boxes 5/10/25 CHOG → cashout at 50</small></div>
+</div>
+<script type="module">
+import { mountPrivyClaim } from '/hero-claim.js';
+const cfg = await fetch('/api/pass-portal/status').then(r=>r.json()).catch(()=>({registrationReady:false, publicAppId:null}));
+if(!cfg.registrationReady) document.getElementById('heroMeta').textContent = 'Portal not ready — using local preview hero (no Privy). Click CLAIM for random hero.';
+mountPrivyClaim(cfg);
+</script>
+</div>
+</body>
+</html>

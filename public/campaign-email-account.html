@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer"><title>CHOGPIT — local email test</title>
+<style>
+:root{color-scheme:dark;font:16px/1.5 system-ui,sans-serif;background:#111a23;color:#eef4f4}
+*{box-sizing:border-box}body{max-width:760px;margin:0 auto;padding:32px 20px 72px}
+h1{color:#aeff67;margin:.4rem 0}h2{font-size:1.15rem;margin:.2rem 0 1rem}
+.warning{background:#4c261c;color:#ffe7d3;border:2px solid #ff9257;border-radius:10px;padding:16px;margin:14px 0}
+section{padding:18px;margin:16px 0;background:#1b2934;border:1px solid #365364;border-radius:12px}
+label{display:block;margin:.8rem 0 .3rem}input,button{font:inherit;border-radius:7px;padding:.65rem .8rem}
+input{color:#f4f9fc;background:#10202b;border:1px solid #6b8fa1;width:100%}
+button{background:#9aef5b;border:0;color:#162516;font-weight:700;cursor:pointer;margin:.7rem .5rem .2rem 0}
+button:disabled{opacity:.55;cursor:not-allowed}.muted{color:#b9cad4}small{display:block;margin:.5rem 0}
+#message{white-space:pre-wrap;min-height:2rem}code{word-break:break-all;color:#d6f5aa}
+</style></head><body>
+<p class="muted">CHOGPIT / ISOLATED ACCOUNT TEST</p><h1>Email account candidate</h1>
+<div class="warning" role="alert"><strong>LOCAL MOCK-TOKEN TEST — NO REAL CHOG.</strong>
+This page is not deployed on chogpit.tech. No funded vault, public claim or payout exists. The intended future recipient is the box-opening raider who proves current ownership of a real minted CHOGPIT Raider Pass before payment. <strong>That pass is not deployed and this candidate cannot verify or enforce it.</strong> A magic link verifies an inbox, not a person, age, location or wallet.</div>
+<section><h2>1 · Ask for a sign-in link</h2>
+<label for="email">Email account</label><input id="email" type="email" autocomplete="email" maxlength="254">
+<button id="askLogin">Send one-time link</button><small>A real delivery provider is not configured in this test build. The local test harness injects a mock sender.</small></section>
+<section><h2>2 · Finish from your email</h2><p id="linkState" class="muted">A link must arrive in this browser tab to continue. Opening it does not automatically use it.</p>
+<button id="completeLink" disabled>Use this one-time link</button><p id="accountState" class="muted">Not signed in</p>
+<button id="logout">Sign out</button></section>
+<section><h2>3 · After a server-verified mock opening</h2><p class="muted">Enter the destination twice; a new email link must confirm it before a mock batch is sealed. A pasted address or email link does not prove wallet control or real Raider Pass ownership. This is an obsolete email-only mock, not holder eligibility. A sealed address cannot be changed.</p>
+<label for="address">Monad-compatible destination</label><input id="address" autocomplete="off" spellcheck="false" placeholder="0x…">
+<label for="confirmAddress">Repeat destination</label><input id="confirmAddress" autocomplete="off" spellcheck="false" placeholder="0x…">
+<button id="askAddress">Email address-confirmation link</button><p id="addressState" class="muted">No address confirmed</p></section>
+<section><h2>Journaled mock openings</h2><ol id="openings"></ol><p class="muted">Never send CHOG or a private key to this account page.</p></section>
+<p id="message" aria-live="polite"></p>
+<script src="/campaign-email-account.js" defer></script>
+</body></html>
