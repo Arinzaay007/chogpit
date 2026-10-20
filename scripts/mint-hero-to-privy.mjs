@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+import 'dotenv/config';
+import { fetchToken } from '../lib/privy.mjs';
+import { createPublicClient, createWalletClient, http, getAddress } from 'viem';
+import { privateKeyToAccount } from 'viem/accounts';
+import { monad } from 'viem/chains';
+const RPC='https://rpc.monad.xyz';
+const HERO=process.env.HERO_ADDRESS;
+if(!HERO) throw new Error('HERO_ADDRESS not set');
+const PK=process.env.MONAD_OWNER_KEY;
+const account=privateKeyToAccount(PK);
+const pub=createPublicClient({chain:monad, transport:http(RPC)});
+const wallet=createWalletClient({account, chain:monad, transport:http(RPC)});
+const to=process.argv[2];
+if(!to) throw new Error('Usage: node mint-hero-to-privy.mjs 0xPrivyWallet');
+const abi=[{name:'mint',type:'function',inputs:[{name:'to',type:'address'}],outputs:[{name:'tokenId',type:'uint256'}]}];
+const hash=await wallet.writeContract({address:getAddress(HERO), abi, functionName:'mint', args:[getAddress(to)]});
+console.log('mint tx',hash);
+await pub.waitForTransactionReceipt({hash});
+console.log('minted HERO to',to);

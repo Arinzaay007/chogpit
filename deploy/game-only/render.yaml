@@ -1,0 +1,31 @@
+# GAME ONLY. This Blueprint does not deploy a reward vault, signer or claim service.
+# Review the paid compute/disk charges in Render before creating the service.
+services:
+  - type: web
+    name: chogpit-game
+    runtime: node
+    region: frankfurt
+    plan: 0.5c-512mb
+    numInstances: 1
+    # Domain registered through Get.Tech; update authoritative DNS after Render creates the service.
+    domains:
+      - chogpit.tech
+    autoDeployTrigger: 'off'
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /healthz
+    disk:
+      name: chogpit-arenas
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: GAME_ONLY_MODE
+        value: '1'
+      - key: REWARD_PAYOUTS
+        value: disabled
+      - key: DATA_PATH
+        value: /var/data/arenas.json

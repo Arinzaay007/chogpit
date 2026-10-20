@@ -1,0 +1,27 @@
+{
+  "name": "chogpit-raider-pass-portal-prototype",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node server.mjs",
+    "test": "node tests/portal.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs"
+  },
+  "dependencies": {
+    "@privy-io/react-auth": "3.50.0",
+    "@solana/kit": "3.0.3",
+    "@stripe/stripe-js": "1.54.0",
+    "better-sqlite3": "12.6.2",
+    "jose": "6.2.12",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "viem": "2.57.7"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}

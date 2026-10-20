@@ -1,0 +1,31 @@
+{
+  "name": "chogpit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Chogpit \u2014 a Chog NFT-owned living arena shooter prototype",
+  "scripts": {
+    "start": "node server.mjs",
+    "dev": "node --watch server.mjs",
+    "test": "node tests/smoke.mjs && node tests/live.mjs && node tests/nft-loop.mjs && node tests/raider-pass.mjs && node tests/rewards.mjs && node tests/contract.mjs && node tests/claim-ledger.mjs && node tests/claim-audit.mjs && node tests/sponsor-flow.mjs && node tests/security-self-review.mjs && node tests/threshold-contract.mjs && node tests/passkey-late-binding.mjs && node tests/candidate-recovery.mjs && node tests/campaign-api.mjs && node tests/email-account-candidate.mjs && node tests/email-admission.mjs && node tests/email-candidate-api.mjs && node tests/sponsor-threshold.mjs && node tests/admission-policy.mjs && node tests/game-only-deployment.mjs && node scripts/prepare_review_bundle.mjs --check && node scripts/export_game_only.mjs --check && node scripts/export_cloudflare_game.mjs --check",
+    "review:build": "node scripts/prepare_review_bundle.mjs",
+    "review:check": "node scripts/prepare_review_bundle.mjs --check",
+    "game:export": "node scripts/export_game_only.mjs",
+    "game:check": "node scripts/export_game_only.mjs --check",
+    "game:cloudflare-export": "node scripts/export_cloudflare_game.mjs",
+    "game:cloudflare-check": "node scripts/export_cloudflare_game.mjs --check",
+    "vercel-build": "echo skip"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^14.0.3",
+    "better-sqlite3": "^12.6.2",
+    "viem": "^2.38.0",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@openzeppelin/contracts": "^4.9.6",
+    "ganache": "^7.9.2",
+    "playwright": "^1.64.1",
+    "solc": "^0.8.30"
+  }
+}

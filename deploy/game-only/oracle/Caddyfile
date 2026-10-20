@@ -1,0 +1,7 @@
+# At the authoritative DNS provider, point chogpit.tech's root A record to the VM's public IPv4.
+# OCI ingress and the VM firewall must allow TCP 80 and 443. Caddy obtains
+# and renews HTTPS certificates automatically and proxies WebSocket upgrades.
+chogpit.tech {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:4173
+}

@@ -1,0 +1,32 @@
+[Unit]
+Description=CHOGPIT game-only private-room server (no CHOG payouts)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=chogpit
+Group=chogpit
+WorkingDirectory=/opt/chogpit
+Environment=PATH=/opt/node-v22.22.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+Environment=NODE_ENV=production
+Environment=GAME_ONLY_MODE=1
+Environment=REWARD_PAYOUTS=disabled
+Environment=DATA_PATH=/var/lib/chogpit/arenas.json
+Environment=PORT=4173
+Environment=LISTEN_HOST=127.0.0.1
+ExecStart=/opt/node-v22.22.0/bin/node /opt/chogpit/server.mjs
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/chogpit
+PrivateTmp=true
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+LimitNOFILE=2048
+
+[Install]
+WantedBy=multi-user.target

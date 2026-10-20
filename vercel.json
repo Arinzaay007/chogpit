@@ -1,0 +1,7 @@
+{
+  "version": 2,
+  "buildCommand": "npm install",
+  "outputDirectory": "public",
+  "builds": [{ "src": "server.mjs", "use": "@vercel/node" }],
+  "routes": [{ "src": "/(.*)", "dest": "server.mjs" }]
+}

@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.*
+data/*.json
+data/*.sqlite*
+preview-*.png
+*.log
+
+.vercel
+.env*

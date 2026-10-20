@@ -1,0 +1,19 @@
+{
+  "name": "chogpit-cloudflare-game-only",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "CHOGPIT free Worker + SQLite Durable Object: playable game, no CHOG payouts",
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8787 --local",
+    "test:live": "node scripts/smoke.mjs",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "viem": "2.57.7"
+  },
+  "devDependencies": {
+    "wrangler": "4.151.1",
+    "ws": "8.22.0"
+  }
+}
