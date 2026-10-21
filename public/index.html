@@ -31,8 +31,7 @@
       <span class="eyebrow">✦ LIVING NFT ARENAS — YOUR FIGHTER IS YOUR NFT</span>
       <h1>BRING A GUN.<br><em>STEAL THE LOOT.</em><br>OWN THE PIT.</h1>
       <p style="font:600 10px 'Space Grotesk';color:#2b2b35">Every minted <b>Chog NFT is a battlefield</b> — its owner built the traps. You raid it with <b>your 40 replica Chog</b> (your fighter). Solo or with friends. Every hidden crate hides <b>5 / 10 / 25 CHOG</b>. Hit <b>50 → auto-paid to your Privy wallet</b> (holder of 40-cap pass). Sponsor pays gas — you sign free consent.</p>
-      <div id="authMount"></div>
-      <div class="cta"><input id="emailInput" type="email" placeholder="you@example.com — Sign Up / Sign In"><button id="signBtn" type="button">ENTER THE PIT →</button></div>
+      <div id="authMount" style="margin-top:12px"></div>
       <div style="margin-top:8px;font:700 9px var(--mono);text-align:center"><a href="/choose.html" style="color:#111">Already in? Choose your Chog →</a> · <a href="/game.html?guest=1">Guest demo</a></div>
       <div class="stats"><div>40 REPLICAS<br><b>CHOOSE 1 — YOURS</b></div><div>MODES<br><b>RAID / FRIENDS</b></div><div>PAYOUT<br><b>50 AUTO-PAY</b></div></div>
     </div>
@@ -47,10 +46,7 @@
   <section><h3>03 — SCARS & CASHOUT</h3><p>Clear? Leave <b>acid / static / spores</b> scar — next raid inherits it. Credit <b>5/10/25</b> per box → <b>50 auto-pay</b> to Privy wallet (must hold pass at payout). Sponsor gas.</p></section>
 </div>
 <div class="how"><span>🎮 W / A / S / D MOVE · CLICK SHOOT · E LOOT · SPACE DASH</span><span>📱 LANDSCAPE ON PHONE — ROTATE PROMPT</span><span>◈ NO WALLET NEEDED TO RAID — PASS ONLY FOR PAYOUT</span></div>
-<script>
-// Simple fallback - works even if Privy fails
-document.getElementById('signBtn').onclick=()=>{ const e=document.getElementById('emailInput').value.trim().toLowerCase(); if(!e) return alert('Enter email'); localStorage.setItem('chogpit.email',e); localStorage.setItem('chogpit.signedUpAt', new Date().toISOString()); location.href='/choose.html'; };
-// Try Privy mount but don't break button if it fails
+<script type="module">
 import('/landing.js').then(m=> fetch('/api/pass-portal/status').then(r=>r.json()).catch(()=>({registrationReady:false,publicAppId:null})).then(s=> m.mountLanding(s))).catch(()=>{});
 </script>
 </body></html>

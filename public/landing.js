@@ -9,7 +9,7 @@ export function mountLanding(cfg){
     const [email,setEmail]=useState(localStorage.getItem('chogpit.email')||''); const [busy,setBusy]=useState(null);
     const embedded=wallets.filter(w=>w.walletClientType==='privy'); const {login}=useLogin({onError:()=>setBusy(null)});
     useEffect(()=>{ if(ready&&authenticated&&wR&&embedded.length===1){ localStorage.setItem('chogpit.privyPayoutAddress', embedded[0].address); } },[ready,authenticated,wR,embedded.length]);
-    async function submit(e){ e.preventDefault(); const hint=email.trim().toLowerCase(); if(!hint) return; localStorage.setItem('chogpit.email', hint); setBusy(hint); if(!authenticated) login({loginMethods:['email'], prefill:{type:'email', value:hint}, walletChainType:'ethereum-only'}); }
+    async function submit(e){ e.preventDefault(); const hint=email.trim().toLowerCase(); if(!hint) return; localStorage.setItem('chogpit.email', hint); localStorage.setItem('chogpit.signedUpAt', new Date().toISOString()); setBusy(hint); if(!authenticated) login({loginMethods:['email'], prefill:{type:'email', value:hint}, walletChainType:'ethereum-only'}); }
     useEffect(()=>{ if(!busy||!authenticated||!ready||!wR) return; if(embedded.length!==1) return;
       (async()=>{ try{ await refreshUser(); const tok=await getIdentityToken(); if(!tok) throw Error('Enable identity token in Privy dashboard');
         const r=await fetch('/api/pass-portal/register',{method:'POST', headers:{'Content-Type':'application/json', Authorization:`Bearer ${tok}`}, body:JSON.stringify({emailHint: busy, address: embedded[0].address})});
