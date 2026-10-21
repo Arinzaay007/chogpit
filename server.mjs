@@ -210,6 +210,21 @@ function messageFor(id, account, nonce, expires, site, layout) {
 
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
+  if (pathname === '/api/pass/claim' && req.method === 'POST') {
+    let body; try{ body=await bodyJson(req);}catch{ return fail(res,400,'Invalid JSON');}
+    let wallet; try{ wallet=getAddress(body.wallet);}catch{ return fail(res,400,'Connect wallet first');}
+    const key=wallet.toLowerCase();
+    // In-memory + file claim ledger (40 cap, one per wallet) — persists to DATA_PATH dir
+    const ledgerFile = path.join(path.dirname(DATA_PATH), 'claims.json');
+    let ledger={}; try{ ledger=JSON.parse(await readFile(ledgerFile,'utf8'));}catch{}
+    if(ledger[key]) return json(res,200,{tokenId: ledger[key].tokenId, wallet, onChain: false, claimedAt: ledger[key].claimedAt});
+    const claimedIds=new Set(Object.values(ledger).map(v=>v.tokenId));
+    if(claimedIds.size>=40) return fail(res,423,'All 40 replicas claimed');
+    let heroId=Math.floor(Number(body.heroId))||0; if(heroId<1||heroId>40||claimedIds.has(heroId)){ for(let i=1;i<=40;i++) if(!claimedIds.has(i)){ heroId=i; break;}}
+    ledger[key]={tokenId: heroId, wallet, heroId, claimedAt: new Date().toISOString()};
+    await mkdir(path.dirname(ledgerFile),{recursive:true}); await writeFile(ledgerFile, JSON.stringify(ledger,null,2));
+    return json(res,200,{tokenId: heroId, wallet, onChain: false, sponsorPaysGas: true, chainId:143, contract: '0xf927c92a4305ec63fd667d03301498df33526c0c'});
+  }
   if (pathname === '/api/pass-portal/status' && req.method === 'GET') {
     const appId = process.env.PRIVY_APP_ID || process.env.NEXT_PUBLIC_PRIVY_APP_ID || null;
     return json(res, 200, { registrationReady: !!appId, publicAppId: appId, chainId: 143 });
