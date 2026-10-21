@@ -95,7 +95,7 @@
     // Auto-check on load but don't block: show lobby for all
     const w0=localStorage.getItem('chogpit.wallet'); if(w0){ document.getElementById('walletLabel').textContent=w0.slice(0,6)+'...'+w0.slice(-4); verify(); }
     // Ensure lobby visible even if verify fails (play for all, pay for holders)
-    lobby.hidden=false;
+    lobby.hidden=false; gate.hidden=true;
   </script>
 </body>
 </html>
