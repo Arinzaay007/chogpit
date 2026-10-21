@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: chogpit-game
+    env: node
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: node server.mjs
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: HOST
+        value: 0.0.0.0
+      - key: GAME_ONLY_MODE
+        value: 0
+      - key: PRIVY_APP_ID
+        sync: false
+      - key: RAIDER_PASS_ADDRESS
+        value: 0xf927c92a4305ec63fd667d03301498df33526c0c
+      - key: VAULT_ADDRESS
+        value: 0x371aa93574af4bc140537fe21fa656b788239149
+      - key: CHOG_ADDRESS
+        value: 0x350035555e10d9afaf1566aaebfced5ba6c27777
