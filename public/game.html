@@ -34,21 +34,22 @@
       <button class="fire-button" id="shootButton" type="button"><span>⌖</span><strong>FIRE</strong><small>HOLD</small></button><button class="touch-dash" id="touchDash" type="button">DASH ⚡</button><button class="pause-button" id="pauseButton" type="button">Ⅱ <span>PAUSE</span></button>
     </div>
 
-    <!-- NFT GATE -->
-    <div class="gate" id="nftGate">
+    <!-- NFT GATE (holder gets bonus, but ALL can play for hackathon) -->
+    <div class="gate" id="nftGate" hidden>
       <h2>YOUR CHOG IS YOUR KEY</h2>
-      <div id="gateMsg" class="warn">Connect wallet holding a claimed CHOG replica #1-40 (0x6655…) to play. Demo pit is closed.</div>
+      <div id="gateMsg" class="warn">Connect wallet holding CHOG replica #1-40 (0x6655…) to earn real CHOG. Guests play for samples.</div>
       <div id="gateStatus" style="margin-top:6px;font:700 10px var(--ui);color:#6b5a73"></div>
       <button class="play-button" id="gateConnect" type="button">CONNECT WALLET ↗</button>
-      <button class="subtle-button" id="gateCheck" type="button">RE-VERIFY NFT ↗</button>
+      <button class="subtle-button" id="gateCheck" type="button">CHECK HOLDER ↗</button>
+      <button class="subtle-button" id="skipGate" type="button">PLAY AS GUEST (samples only) →</button>
     </div>
 
-    <!-- SIMPLIFIED LOBBY: ONLY SOLO + FRIENDS CODE -->
-    <div class="lobby-shade" id="lobbyOverlay" hidden>
+    <!-- LOBBY: SOLO + FRIENDS CODE FOR ALL -->
+    <div class="lobby-shade" id="lobbyOverlay">
       <div class="lobby-card" style="max-width:900px">
-        <div class="eyebrow"><span class="eyebrow-star">✦</span> YOUR CHOG <span id="myHeroLabel">—</span> <span>HOLDER-ONLY PLAY</span></div>
-        <h1>YOUR CHOG<br/><em>YOUR RAID.</em></h1>
-        <p class="lobby-lede">Only wallets that hold a claimed <b>CHOG replica #1-40</b> on Monad 143 can raid. Guest and demo are disabled. Pick SOLO or FRIENDS CODE below.</p>
+        <div class="eyebrow"><span class="eyebrow-star">✦</span> PLAY NOW <span id="myHeroLabel">— ALL WELCOME</span> <span>HOLDER = REAL CHOG</span></div>
+        <h1>YOUR RAID.<br/><em>YOUR LOOT.</em></h1>
+        <p class="lobby-lede">Everyone can <b>SOLO</b> or <b>FRIENDS CODE (vs BOT / vs EACH OTHER)</b>. Holders of <b>CHOG #1-40 (0x6655…)</b> earn <b>real CHOG (0x3500...)</b> via vault <b>0x371a...</b> (1000 CHOG) — guests earn samples.</p>
         <div class="mode2">
           <button class="mode-card reward-solo-card" id="soloBountyButton" type="button" style="text-align:left"><span class="mode-icon">◈</span><span><strong>SOLO RAID <span>LIVE PIT</span></strong><small>Server bots · 3:00 · 2 supplies · 5 lives · 5/10/25 → 50 CHOG</small></span><b>RAID ↗</b></button>
           <details class="live-entry" id="liveEntry" open><summary class="mode-card live-mode-card"><span class="mode-icon">⚔</span><div><strong>FRIENDS CODE <span>VS BOT / VS EACH OTHER</span></strong><small>Host picks co-op (vs BOT) or PvP · 2-4 · 5 lives</small></div><b>CODE</b></summary>
@@ -90,8 +91,11 @@
       verify();
     };
     document.getElementById('gateCheck').onclick=verify;
-    // Auto-check on load
+    document.getElementById('skipGate').onclick=()=>{ gate.hidden=true; lobby.hidden=false; document.getElementById('gameModeLabel').textContent='GUEST — SAMPLES ONLY'; };
+    // Auto-check on load but don't block: show lobby for all
     const w0=localStorage.getItem('chogpit.wallet'); if(w0){ document.getElementById('walletLabel').textContent=w0.slice(0,6)+'...'+w0.slice(-4); verify(); }
+    // Ensure lobby visible even if verify fails (play for all, pay for holders)
+    lobby.hidden=false;
   </script>
 </body>
 </html>
