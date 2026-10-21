@@ -210,20 +210,51 @@ function messageFor(id, account, nonce, expires, site, layout) {
 
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
+  if (pathname === '/api/pass/claims' && req.method === 'GET') {
+    const ledgerFile = path.join(path.dirname(DATA_PATH), 'claims.json');
+    let ledger={}; try{ ledger=JSON.parse(await readFile(ledgerFile,'utf8'));}catch{}
+    const claimedIds=Object.values(ledger).map(v=>v.tokenId);
+    return json(res,200,{claimedIds, total: claimedIds.length, max:40});
+  }
   if (pathname === '/api/pass/claim' && req.method === 'POST') {
     let body; try{ body=await bodyJson(req);}catch{ return fail(res,400,'Invalid JSON');}
     let wallet; try{ wallet=getAddress(body.wallet);}catch{ return fail(res,400,'Connect wallet first');}
     const key=wallet.toLowerCase();
-    // In-memory + file claim ledger (40 cap, one per wallet) — persists to DATA_PATH dir
     const ledgerFile = path.join(path.dirname(DATA_PATH), 'claims.json');
     let ledger={}; try{ ledger=JSON.parse(await readFile(ledgerFile,'utf8'));}catch{}
-    if(ledger[key]) return json(res,200,{tokenId: ledger[key].tokenId, wallet, onChain: false, claimedAt: ledger[key].claimedAt});
+    if(ledger[key]) return json(res,200,{tokenId: ledger[key].tokenId, wallet, onChain: !!ledger[key].txHash, txHash: ledger[key].txHash || null, claimedAt: ledger[key].claimedAt});
     const claimedIds=new Set(Object.values(ledger).map(v=>v.tokenId));
     if(claimedIds.size>=40) return fail(res,423,'All 40 replicas claimed');
     let heroId=Math.floor(Number(body.heroId))||0; if(heroId<1||heroId>40||claimedIds.has(heroId)){ for(let i=1;i<=40;i++) if(!claimedIds.has(i)){ heroId=i; break;}}
-    ledger[key]={tokenId: heroId, wallet, heroId, claimedAt: new Date().toISOString()};
+    // If sponsor key present, mint on-chain to wallet (sponsor pays gas) — prevents double-claim on-chain
+    const sponsorKey=process.env.SPONSOR_PRIVATE_KEY || process.env.PRIVATE_KEY;
+    const passAddr=process.env.RAIDER_PASS_ADDRESS || '0x6655f23193142cC1E323522C363a52CDea8e3ce2';
+    let txHash=null, onChain=false;
+    if(sponsorKey){
+      try{
+        const { createWalletClient } = await import('viem');
+        const { privateKeyToAccount } = await import('viem/accounts');
+        const account=privateKeyToAccount(sponsorKey.startsWith('0x')?sponsorKey:'0x'+sponsorKey);
+        const walletClient=createWalletClient({ account, chain, transport: viemHttp('https://rpc.monad.xyz')});
+        const abiClaim=parseAbi(['function mintWithConsent(address recipient,uint256 deadline,bytes signature) returns (uint256)','function everClaimed(address) view returns (bool)','function totalSupply() view returns (uint256)','function nonces(address) view returns (uint256)']);
+        // Check not already claimed on-chain
+        const already=await client.readContract({address: getAddress(passAddr), abi: abiClaim, functionName:'everClaimed', args:[wallet]}).catch(()=>false);
+        if(already) return fail(res,409,'This wallet already owns a Pass on-chain');
+        // EIP-712 claim: Claim(address recipient,uint256 nonce,uint256 deadline)
+        const nonce=await client.readContract({address: getAddress(passAddr), abi: abiClaim, functionName:'nonces', args:[wallet]}).catch(()=>0n);
+        const deadline=BigInt(Math.floor(Date.now()/1000)+3600);
+        const { signTypedData } = await import('viem/accounts');
+        // Use walletClient signing via account
+        const domain={name:'CHOGPIT Raider Pass', version:'1', chainId:143, verifyingContract: getAddress(passAddr)};
+        const types={ Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}]};
+        const signature=await account.signTypedData({ domain, types, primaryType:'Claim', message:{recipient: wallet, nonce, deadline}});
+        txHash=await walletClient.writeContract({ address: getAddress(passAddr), abi: abiClaim, functionName:'mintWithConsent', args:[wallet, deadline, signature]});
+        onChain=true;
+      }catch(e){ console.error('on-chain mint failed', e); return fail(res, 500, `On-chain mint failed: ${e.shortMessage||e.message}. Check sponsor MON balance.`); }
+    }
+    ledger[key]={tokenId: heroId, wallet, heroId, claimedAt: new Date().toISOString(), txHash};
     await mkdir(path.dirname(ledgerFile),{recursive:true}); await writeFile(ledgerFile, JSON.stringify(ledger,null,2));
-    return json(res,200,{tokenId: heroId, wallet, onChain: false, sponsorPaysGas: true, chainId:143, contract: '0xf927c92a4305ec63fd667d03301498df33526c0c'});
+    return json(res,200,{tokenId: heroId, wallet, onChain, txHash, sponsorPaysGas: true, chainId:143, contract: passAddr});
   }
   if (pathname === '/api/pass-portal/status' && req.method === 'GET') {
     const appId = process.env.PRIVY_APP_ID || process.env.NEXT_PUBLIC_PRIVY_APP_ID || null;

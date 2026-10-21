@@ -3,7 +3,31 @@ const POSES=["/assets/chog-pose1.png","/assets/chog-pose2.png","/assets/chog-pos
 const TRAITS=["Aqua","Lime","Sky","Crimson","Lemon","Violet","Void","Monad"];
 function hero(i){ const n=NAMES[i%40]; return { id:i+1, name:n[0], bg:n[1], wep:n[2], color:COLORS[i%8], trait:TRAITS[i%8], speed:(3.8+(i%5)*0.3).toFixed(1), body:["Bulky","Slim","Armored","Spiked"][i%4], eyes:["Laser","Void","Neon","Pixel"][i%4], aura:["Fire","Ice","Storm","Void"][i%4]}; }
 const grid=document.getElementById('grid'); let sel=null;
-for(let i=0;i<40;i++){ const h=hero(i); const pose=POSES[i%POSES.length]; const el=document.createElement('div'); el.className='card'; el.innerHTML=`<div class="art"><img src="${pose}" alt=""><div class="tint" style="background:${h.color}"></div><span class="badge">${h.trait}</span><span class="num">#${String(h.id).padStart(2,'0')}/40</span><div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.65);color:white;padding:4px 6px;font:900 7px var(--mono);display:flex;justify-content:space-between"><span>${h.body}</span><span>♥ ${h.speed}spd</span></div></div><div class="meta"><b>${h.name}</b><br><small>${h.bg} · ${h.eyes} eyes · ${h.aura} aura</small><br><small>⚔ ${h.wep}</small></div>`; el.onclick=()=>{ document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); sel=h; document.getElementById('claimBtn').disabled=false; document.getElementById('claimBtn').textContent=`CLAIM ${h.name.toUpperCase()} #${h.id} → ENTER PIT`; document.getElementById('status').textContent=`Selected: ${h.name} — ${h.bg} / ${h.body} / ${h.eyes} / ${h.aura} → ${h.wep} · ${h.speed}spd`; }; grid.appendChild(el); }
+let claimedSet=new Set();
+// Load claimed list (any wallet) → mark CLAIMED, not clickable
+fetch('/api/pass/claims').then(r=>r.json()).then(j=>{
+  claimedSet=new Set(j.claimedIds||[]);
+  renderGrid();
+}).catch(()=>renderGrid());
+
+function renderGrid(){
+  grid.innerHTML='';
+  for(let i=0;i<40;i++){
+    const h=hero(i); const pose=POSES[i%POSES.length]; const isClaimed=claimedSet.has(h.id);
+    const el=document.createElement('div'); el.className='card'+(isClaimed?' claimed':'');
+    el.style.opacity=isClaimed?'0.45':''; el.style.pointerEvents=isClaimed?'none':'';
+    el.innerHTML=`<div class="art"><img src="${pose}" alt=""><div class="tint" style="background:${h.color}"></div><span class="badge">${h.trait}</span><span class="num">#${String(h.id).padStart(2,'0')}/40</span>${isClaimed?'<span style="position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,0.6);color:#ffec47;font:1000 14px var(--mono)">CLAIMED</span>':''}<div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.65);color:white;padding:4px 6px;font:900 7px var(--mono);display:flex;justify-content:space-between"><span>${h.body}</span><span>♥ ${h.speed}spd</span></div></div><div class="meta"><b>${h.name}</b><br><small>${h.bg} · ${h.eyes} eyes · ${h.aura} aura</small><br><small>⚔ ${h.wep}</small></div>`;
+    if(!isClaimed){
+      el.onclick=()=>{
+        document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); sel=h;
+        document.getElementById('claimBtn').disabled=false; document.getElementById('claimBtn').textContent=`CLAIM ${h.name.toUpperCase()} #${h.id} → ENTER PIT`;
+        document.getElementById('status').textContent=`Selected: ${h.name} — ${h.bg} / ${h.body} / ${h.eyes} / ${h.aura} → ${h.wep} · ${h.speed}spd`;
+      };
+    }
+    grid.appendChild(el);
+  }
+}
+
 document.getElementById('claimBtn').onclick=async()=>{
   if(!sel) return;
   const wallet = localStorage.getItem('chogpit.wallet');
@@ -11,7 +35,6 @@ document.getElementById('claimBtn').onclick=async()=>{
   const btn=document.getElementById('claimBtn'); btn.textContent='MINTING TO '+wallet.slice(0,6)+'... →'; btn.disabled=true;
   document.getElementById('status').textContent='Signing free claim (sponsor pays gas)…';
   try{
-    // If already claimed on this wallet, reuse that token
     const existing=localStorage.getItem('chogpit.claimToken:'+wallet.toLowerCase());
     if(existing){ const data={...sel, id:Number(existing), wallet, claimedAt:new Date().toISOString(), onChain:true}; localStorage.setItem('chogpit.hero', JSON.stringify(data)); localStorage.setItem('chogpit.heroId', String(data.id)); localStorage.setItem('chogpit.passHolder','1'); localStorage.setItem('chogpit.credit','0'); btn.textContent='ALREADY CLAIMED #'+data.id+' → ENTERING PIT…'; setTimeout(()=> location.href='/game.html', 600); return; }
     const r=await fetch('/api/pass/claim',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet, heroId: sel.id})});
