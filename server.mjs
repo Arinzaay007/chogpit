@@ -210,6 +210,19 @@ function messageFor(id, account, nonce, expires, site, layout) {
 
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
+  if (pathname === '/api/nft/verify' && req.method === 'GET') {
+    const wallet=url.searchParams.get('wallet'); let addr; try{ addr=getAddress(wallet);}catch{ return fail(res,400,'Invalid wallet');}
+    const passAddr=getAddress(process.env.RAIDER_PASS_ADDRESS||'0x6655F23193142CC1E323522C363A52Cdea8E3CE2');
+    try{
+      const abi=parseAbi(['function balanceOf(address) view returns (uint256)','function tokenOfOwnerByIndex(address,uint256) view returns (uint256)','function everClaimed(address) view returns (bool)']);
+      const bal=await client.readContract({address: passAddr, abi, functionName:'balanceOf', args:[addr]});
+      if(bal===0n) return json(res,200,{isHolder:false, error:'No CHOG replica owned'});
+      // Try enumeration (if ERC721Enumerable), fallback to claims.json
+      let tokenId=null; try{ tokenId=await client.readContract({address: passAddr, abi, functionName:'tokenOfOwnerByIndex', args:[addr,0n]});}catch{}
+      if(tokenId===null){ const lf=path.join(path.dirname(DATA_PATH),'claims.json'); try{ const lg=JSON.parse(await readFile(lf,'utf8')); const rec=lg[addr.toLowerCase()]; if(rec) tokenId=BigInt(rec.tokenId);}catch{} }
+      return json(res,200,{isHolder:true, wallet:addr, tokenId: tokenId? Number(tokenId): 1, balance: Number(bal)});
+    }catch(e){ return fail(res,503, e.shortMessage||e.message); }
+  }
   if (pathname === '/api/pass/claims' && req.method === 'GET') {
     const ledgerFile = path.join(path.dirname(DATA_PATH), 'claims.json');
     let ledger={}; try{ ledger=JSON.parse(await readFile(ledgerFile,'utf8'));}catch{}
