@@ -20,6 +20,8 @@
   </header>
 
   <main class="game-stage" id="gameStage">
+    <!-- hidden stubs for old app.js listeners (prevents null crash) -->
+    <div hidden><button id="playButton"></button><button id="demoButton"></button><button id="refreshClaimStatus"></button><div id="passJumpButton"></div></div>
     <canvas id="gameCanvas" aria-label="CHOGPIT arena"></canvas><div class="vignette" aria-hidden="true"></div>
 
     <div class="game-hud" id="gameHud" hidden>
