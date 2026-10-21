@@ -47,10 +47,10 @@
   <section><h3>03 — SCARS & CASHOUT</h3><p>Clear? Leave <b>acid / static / spores</b> scar — next raid inherits it. Credit <b>5/10/25</b> per box → <b>50 auto-pay</b> to Privy wallet (must hold pass at payout). Sponsor gas.</p></section>
 </div>
 <div class="how"><span>🎮 W / A / S / D MOVE · CLICK SHOOT · E LOOT · SPACE DASH</span><span>📱 LANDSCAPE ON PHONE — ROTATE PROMPT</span><span>◈ NO WALLET NEEDED TO RAID — PASS ONLY FOR PAYOUT</span></div>
-<script type="module">
-import { mountLanding } from '/landing.js';
-const s=await fetch('/api/pass-portal/status').then(r=>r.json()).catch(()=>({registrationReady:false,publicAppId:null}));
-mountLanding(s);
-document.getElementById('signBtn').onclick=()=>{ const e=document.getElementById('emailInput').value.trim().toLowerCase(); if(!e) return alert('Enter email'); localStorage.setItem('chogpit.email',e); location.href='/choose.html'; };
+<script>
+// Simple fallback - works even if Privy fails
+document.getElementById('signBtn').onclick=()=>{ const e=document.getElementById('emailInput').value.trim().toLowerCase(); if(!e) return alert('Enter email'); localStorage.setItem('chogpit.email',e); localStorage.setItem('chogpit.signedUpAt', new Date().toISOString()); location.href='/choose.html'; };
+// Try Privy mount but don't break button if it fails
+import('/landing.js').then(m=> fetch('/api/pass-portal/status').then(r=>r.json()).catch(()=>({registrationReady:false,publicAppId:null})).then(s=> m.mountLanding(s))).catch(()=>{});
 </script>
 </body></html>
