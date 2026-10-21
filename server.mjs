@@ -210,6 +210,10 @@ function messageFor(id, account, nonce, expires, site, layout) {
 
 async function handleApi(req, res, url) {
   const pathname = url.pathname;
+  if (pathname === '/api/pass-portal/status' && req.method === 'GET') {
+    const appId = process.env.PRIVY_APP_ID || process.env.NEXT_PUBLIC_PRIVY_APP_ID || null;
+    return json(res, 200, { registrationReady: !!appId, publicAppId: appId, chainId: 143 });
+  }
   if (pathname === '/api/status' && req.method === 'GET') {
     return json(res, 200, { ok: true, mode: GAME_ONLY_MODE ? 'GAME_ONLY' : 'PREVIEW',
       gameOnly: GAME_ONLY_MODE, chainId: 143, nft: NFT_ADDRESS, token: CHOG_ADDRESS,
