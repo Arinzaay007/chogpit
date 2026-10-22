@@ -109,11 +109,11 @@ function updateCareer() {
 function renderPitDossier() {
   const arena = state.arena, demo = state.id === 'demo';
   const set = (id, v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
-  set('pitDossierKicker', demo ? 'TUTORIAL / OPEN TRAINING PIT' : `ON-CHAIN TOKEN ID #${state.id} · ART NAME BELOW`);
-  set('pitDossierTitle', demo ? 'TRAINING PIT · NOT AN NFT' : arena.nftName || `CHOG #${state.id}`);
+  set('pitDossierKicker', demo ? 'SOLO · EARN REAL CHOG (HOLDER)' : `ON-CHAIN TOKEN ID #${state.id} · ART NAME BELOW`);
+  set('pitDossierTitle', demo ? 'ARENA READY · GO RAID' : arena.nftName || `CHOG #${state.id}`);
   set('pitDossierOwner', demo ? 'Everyone can test building here. Demo scars are training-only.'
     : `ON-CHAIN OWNER AT LAST LOAD: ${/^0x[0-9a-fA-F]{40}$/.test(arena.owner || '') ? shortAddress(arena.owner) : 'CHECK UNAVAILABLE'} · Only the current owner can sign and save defenses; ownership is rechecked on each save.`);
-  set('pitDossierTraits', demo ? 'No NFT traits in the tutorial.'
+  set('pitDossierTraits', demo ? 'All pits earn real CHOG if you hold CHOG #1-40.'
     : (arena.traitHighlights?.length ? arena.traitHighlights.join(' · ') : 'Traits unavailable · token ID alone seeds the pit'));
   set('pitDossierRoute', `${game.layoutName || 'OPEN TRAINING PIT'} · ${game.mapCode || '----'}`);
   set('pitDossierTraps', `${arena.traps?.length || 0} / 8`);
@@ -615,10 +615,11 @@ function leaveRoom() {
 function updateResultPreview() {
   const live = state.live; if(!live) return;
   const w=localStorage.getItem('chogpit.wallet');
-  // Show REAL CHOG status for holders, not old preview text
+  const isH=!!w;
+  // REAL solo: earn on every game, no tutorial block
   $('resultPreview').hidden = false;
-  if(w) $('resultPreview').textContent = `REAL VAULT 0x371a… 1000 CHOG — HOLDER # → ${live.rewardFound||0} boxes → 5/10/25 INSTANT to wallet (auto)`;
-  else $('resultPreview').textContent = `HIDDEN BOXES · ${live.rewardFound||0} FOUND · Claim CHOG #1-40 on /choose.html for REAL 0x371a vault (currently: sample)`;
+  if(isH) $('resultPreview').textContent = `✔ REAL CHOG SOLO · ${live.rewardFound||0} box${live.rewardFound===1?'':'es'} opened → 5/10/25 CHOG INSTANT to ${w.slice(0,6)}… (vault 0x371a 1000 CHOG)`;
+  else $('resultPreview').textContent = `⚠ SAMPLE SOLO · ${live.rewardFound||0} found · Connect wallet + claim CHOG #1-40 to earn REAL 0x371a vault`;
 }
 function beginLiveRound() {
   const live = state.live;
