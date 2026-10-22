@@ -613,11 +613,12 @@ function leaveRoom() {
   showLobby();
 }
 function updateResultPreview() {
-  const live = state.live;
-  $('resultPreview').hidden = !live;
-  if (live) $('resultPreview').textContent = live.campaign
-    ? `RECORDED BOXES · ${live.rewardFound || 0} · NO CHOG WITHOUT OPENING RAIDER'S REAL RAIDER PASS BEFORE PAYOUT · PREVIEW POINTS NEVER CONVERT`
-    : `HIDDEN-BOX TEST · ${live.rewardFound || 0} FOUND · ${live.previewAmount || 0} SIMULATED CHOG · NO REAL TOKENS OR WITHDRAWALS`;
+  const live = state.live; if(!live) return;
+  const w=localStorage.getItem('chogpit.wallet');
+  // Show REAL CHOG status for holders, not old preview text
+  $('resultPreview').hidden = false;
+  if(w) $('resultPreview').textContent = `REAL VAULT 0x371a… 1000 CHOG — HOLDER # → ${live.rewardFound||0} boxes → 5/10/25 INSTANT to wallet (auto)`;
+  else $('resultPreview').textContent = `HIDDEN BOXES · ${live.rewardFound||0} FOUND · Claim CHOG #1-40 on /choose.html for REAL 0x371a vault (currently: sample)`;
 }
 function beginLiveRound() {
   const live = state.live;
