@@ -247,7 +247,7 @@ function showLobby() {
   state.mode = 'lobby'; try{closePanel();}catch{} releaseInteract();
   document.body.classList.remove('live-active'); $('roomOverlay').hidden = true; $('liveScoreboard').hidden = true;
   $('respawnOverlay').hidden = true;
-  $('matchLabel').textContent = 'FREE BOT PLAYTEST'; $('pauseButton').innerHTML = 'Ⅱ <span>PAUSE</span>';
+  $('matchLabel').textContent = 'SOLO · REAL CHOG LIVE'; $('pauseButton').innerHTML = 'Ⅱ <span>PAUSE</span>';
   $('pauseButton').setAttribute('aria-label', 'Pause game');
   $('buildButton').textContent = state.id === 'demo' ? 'TRAINING BUILDER' : `BUILD NFT #${state.id}`;
   $('buildButton').setAttribute('aria-label', state.id === 'demo' ? 'Open tutorial builder' : `Build Chog NFT #${state.id}`);
@@ -615,11 +615,9 @@ function leaveRoom() {
 function updateResultPreview() {
   const live = state.live; if(!live) return;
   const w=localStorage.getItem('chogpit.wallet');
-  const isH=!!w;
-  // REAL solo: earn on every game, no tutorial block
   $('resultPreview').hidden = false;
-  if(isH) $('resultPreview').textContent = `✔ REAL CHOG SOLO · ${live.rewardFound||0} box${live.rewardFound===1?'':'es'} opened → 5/10/25 CHOG INSTANT to ${w.slice(0,6)}… (vault 0x371a 1000 CHOG)`;
-  else $('resultPreview').textContent = `⚠ SAMPLE SOLO · ${live.rewardFound||0} found · Connect wallet + claim CHOG #1-40 to earn REAL 0x371a vault`;
+  if(w) $('resultPreview').textContent = `✔ EARNED WITH YOUR NFT · ${live.rewardFound||0} box${live.rewardFound===1?'':'es'} → 5/10/25 CHOG sent to ${w.slice(0,6)}…`;
+  else $('resultPreview').textContent = `⚠ ${live.rewardFound||0} found · Connect wallet + claim CHOG #1-40 to earn CHOG`;
 }
 function beginLiveRound() {
   const live = state.live;
