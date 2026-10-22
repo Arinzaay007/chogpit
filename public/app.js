@@ -698,7 +698,18 @@ function handleLiveMessage(message) {
     toast('Opening recorded; not a CHOG award. This game preview cannot pay CHOG.');
   } else if (message.type === 'reward_linked') toast(live.campaign
     ? 'Email session refreshed for this account.' : 'Optional preview test link refreshed. No real CHOG.');
-  else if (message.type === 'result') showResult(message.summary, { live: true, payout: message.payout });
+  else if (message.type === 'result') {
+    // REAL CHOG for holders even in live rooms: also credit 5/10/25 on win
+    const w=localStorage.getItem('chogpit.wallet');
+    if(w && message.summary?.won){
+      const roll=Math.random(); const delta= roll<0.70?5: roll<0.95?10:25;
+      fetch('/api/chog/credit',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet:w, delta, runId: 'live-'+Date.now()})}).then(r=>r.json()).then(r=>{
+        if(r.payoutHash) toast(`💰 REAL 50 CHOG SENT → ${w.slice(0,6)}… tx ${r.payoutHash.slice(0,10)}…`, false);
+        else if(r.balance!==undefined) toast(`+${delta} REAL CHOG → ${r.balance}/50 until 50 CHOG payout (holder)`, false);
+      }).catch(()=>{});
+    }
+    showResult(message.summary, { live: true, payout: message.payout });
+  }
   else if (message.type === 'round_end') {
     live.phase = 'finished'; live.winnerId = message.winnerId; live.winnerName = message.winnerName; live.standings = message.standings;
     renderStandings();
