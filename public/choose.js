@@ -67,7 +67,7 @@ document.getElementById('claimBtn').onclick=async()=>{
     const deadline=Math.floor(Date.now()/1000)+3600;
     const domain={name:'CHOGPIT Raider Pass', version:'1', chainId:143, verifyingContract: passAddr};
     const types={ Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}]};
-    const message={recipient: wallet, nonce: BigInt(nonce).toString(), deadline: BigInt(deadline).toString()};
+    const message={recipient: wallet, nonce: Number(nonce), deadline: Number(deadline)};
     // Request signature from YOUR wallet (auto pop)
     const signature=await window.ethereum.request({method:'eth_signTypedData_v4', params:[wallet, JSON.stringify({domain, types, primaryType:'Claim', message})]});
     btn.textContent='MINTING TO '+wallet.slice(0,6)+'... →';
