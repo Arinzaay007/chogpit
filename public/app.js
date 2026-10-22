@@ -579,7 +579,7 @@ function renderRespawn(snapshot = state.live?.lastSnapshot) {
 }
 function showRoomScreen() {
   if (!state.live) return;
-  game.keys.clear(); game.clearTouch(); releaseInteract(); stopFiring();
+  game.keys.clear(); game.clearTouch(); releaseInteract(); if(typeof stopFiring==='function') stopFiring();
   state.mode = 'room';
   $('lobbyOverlay').hidden = true; $('resultOverlay').hidden = true; $('pauseOverlay').hidden = true;
   $('roomOverlay').hidden = false; $('respawnOverlay').hidden = true;
@@ -842,7 +842,7 @@ $('crateModal').addEventListener('click', e => { if (e.target === $('crateModal'
 $('cycleModButton').addEventListener('click', () => { const mods = [...new Set(state.collection)]; if (!mods.length) return; state.equipped = mods[(mods.indexOf(state.equipped) + 1) % mods.length]; updateLocker(); toast(`${state.equipped} equipped.`); });
 const shootButton = $('shootButton');
 let firePointerId = null;
-const stopFiring = event => {
+function stopFiring(event){
   if (event?.pointerId !== undefined && firePointerId !== event.pointerId) return;
   firePointerId = null; game.setFiring(false); shootButton.classList.remove('active');
 };

@@ -21,7 +21,13 @@
 
   <main class="game-stage" id="gameStage">
     <!-- hidden stubs for old app.js listeners (prevents null crash) -->
-    <div hidden><button id="playButton"></button><button id="demoButton"></button><button id="refreshClaimStatus"></button><div id="passJumpButton"></div><div id="toast" hidden></div><div id="eventFeed" hidden></div></div>
+    <div hidden>
+      <button id="playButton"></button><button id="demoButton"></button><button id="refreshClaimStatus"></button><div id="passJumpButton"></div>
+      <div id="toast" hidden></div><div id="eventFeed" hidden></div>
+      <div id="privyPayoutAddr"></div><div id="sponsorAddr">0x0d362Cf9443D6C2FF7Faa20C11111702e7099FC6</div><div id="vaultAddr">0x371aa93574af4bc140537fe21fa656b788239149</div>
+      <button id="copySponsor"></button><button id="copyVault"></button><button id="passPreviewButton"></button>
+      <div id="previewBalance"></div><div id="claimBadge"></div><div id="privyPayoutNote"></div>
+    </div>
     <canvas id="gameCanvas" aria-label="CHOGPIT arena"></canvas><div class="vignette" aria-hidden="true"></div>
 
     <div class="game-hud" id="gameHud" hidden>
