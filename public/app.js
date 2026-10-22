@@ -863,9 +863,8 @@ const startFire = e => {
   if (!['play', 'online'].includes(game.mode)) return;
   e.preventDefault(); e.stopPropagation(); audio.unlock();
   try{ shootButton.setPointerCapture(e.pointerId);}catch{}
-  firePointerId = e.pointerId; shootButton.classList.add('active'); game.setFiring(true, true);
-  // keep firing even if pointerId check fails on some mobiles
-  setTimeout(()=>{ if(shootButton.classList.contains('active')) game.setFiring(true,true); }, 60);
+  firePointerId = e.pointerId; shootButton.classList.add('active');
+  game.touchUsed = true; game.setFiring(true, true); game.autoAimAtRival?.();
 };
 shootButton.addEventListener('pointerdown', startFire);
 shootButton.addEventListener('touchstart', startFire, {passive:false});
