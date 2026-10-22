@@ -26,9 +26,10 @@ h1 .gold{background:linear-gradient(90deg,#ffd60a,#ffec47);-webkit-background-cl
     <h1>BRING A GUN.<br><span class="gold">STEAL THE LOOT.</span></h1>
     <p class="sub">Every <b style="color:#a3e635">Chog Genesis NFT</b> is a deed to a raidable pit on Monad. Defend yours. Breach theirs. Extract — and leave a <b style="color:#c084fc">scar</b> behind.</p>
     <div class="cta">
-      <a href="/game.html" class="btn btn-slime" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">⚔ ENTER THE PIT</a>
+      <button id="connectBtn" class="btn btn-slime" style="display:inline-flex;align-items:center;gap:8px">◈ CONNECT WALLET →</button>
       <a href="/choose.html" class="btn btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">✦ CLAIM YOUR CHOG #1-40</a>
     </div>
+    <div id="walletStatus" style="margin-top:10px;font:700 11px system-ui;color:#a3e635;min-height:16px"></div>
     <div class="chips">
       <span class="chip"><b>412</b> RAIDERS IN PIT</span><span class="chip"><b>50,000 $CHOG</b> SEASON POOL</span><span class="chip">S3 ENDS <b id="cd">11d 07:23:00</b></span>
     </div>
@@ -38,5 +39,18 @@ h1 .gold{background:linear-gradient(90deg,#ffd60a,#ffec47);-webkit-background-cl
 <script>
 document.getElementById('cd').textContent='11d 07:23:00';
 fetch('/api/pass/claims').then(r=>r.json()).then(j=>{ const c=j.claimedIds?.length||0; document.getElementById('ticker').textContent=`${c}/40 CLAIMED · ${40-c} FREE · ${c} RAIDERS IN PIT · 50,000 $CHOG POOL · `; }).catch(()=>{});
+const btn=document.getElementById('connectBtn'), st=document.getElementById('walletStatus');
+const w=localStorage.getItem('chogpit.wallet'); if(w) { btn.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4); st.textContent='Connected — pick your fighter →'; }
+btn.onclick=async()=>{
+  try{
+    if(!window.ethereum){ st.textContent='Install MetaMask / Rabby'; window.open('https://metamask.io/download/','_blank'); return; }
+    btn.textContent='Connecting…';
+    const a=await window.ethereum.request({method:'eth_requestAccounts'});
+    const addr=a[0]; localStorage.setItem('chogpit.wallet', addr); localStorage.removeItem('chogpit.guest');
+    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}})}
+    btn.textContent='✓ '+addr.slice(0,6)+'...'+addr.slice(-4); st.textContent='Connected — claim your 1 of 40 →';
+    setTimeout(()=> location.href='/choose.html', 600);
+  }catch(e){ btn.textContent='◈ CONNECT WALLET →'; st.textContent=e.message; }
+};
 </script>
 </body></html>

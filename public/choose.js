@@ -4,6 +4,26 @@ const TRAITS=["Aqua","Lime","Sky","Crimson","Lemon","Violet","Void","Monad"];
 function hero(i){ const n=NAMES[i%40]; return { id:i+1, name:n[0], bg:n[1], wep:n[2], color:COLORS[i%8], trait:TRAITS[i%8], speed:(3.8+(i%5)*0.3).toFixed(1), body:["Bulky","Slim","Armored","Spiked"][i%4], eyes:["Laser","Void","Neon","Pixel"][i%4], aura:["Fire","Ice","Storm","Void"][i%4]}; }
 const grid=document.getElementById('grid'); let sel=null;
 let claimedSet=new Set();
+// Wallet guard for choose.html
+const walletBtn=document.getElementById('connectWalletBtn'), walletAddrEl=document.getElementById('walletAddr'), holderNote=document.getElementById('holderNote');
+function refreshWalletUI(){
+  const w=localStorage.getItem('chogpit.wallet');
+  if(w){ walletAddrEl.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4)+' (Monad 143)'; walletBtn.textContent='✓ CONNECTED'; walletBtn.disabled=true; }
+  else { walletAddrEl.textContent='Not connected — connect to claim (1 per wallet)'; holderNote.textContent=''; }
+  // disable claim if no wallet
+  if(!w && sel) { document.getElementById('claimBtn').disabled=true; document.getElementById('claimBtn').textContent='CONNECT WALLET TO CLAIM →'; document.getElementById('status').textContent='Connect wallet first — one claim per wallet'; }
+}
+walletBtn.onclick=async()=>{
+  try{
+    if(!window.ethereum){ alert('Install MetaMask'); window.open('https://metamask.io/download/','_blank'); return; }
+    const a=await window.ethereum.request({method:'eth_requestAccounts'}); localStorage.setItem('chogpit.wallet', a[0]); localStorage.removeItem('chogpit.guest');
+    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}})}
+    refreshWalletUI();
+    // re-enable claim if selection exists
+    if(sel){ document.getElementById('claimBtn').disabled=false; document.getElementById('claimBtn').textContent=`CLAIM ${sel.name.toUpperCase()} #${sel.id} → ENTER PIT`; }
+  }catch(e){ alert(e.message); }
+};
+refreshWalletUI();
 // Load claimed list (any wallet) → mark CLAIMED, not clickable
 fetch('/api/pass/claims').then(r=>r.json()).then(j=>{
   claimedSet=new Set(j.claimedIds||[]);
@@ -20,12 +40,15 @@ function renderGrid(){
     if(!isClaimed){
       el.onclick=()=>{
         document.querySelectorAll('.card').forEach(x=>x.classList.remove('selected')); el.classList.add('selected'); sel=h;
+        const w=localStorage.getItem('chogpit.wallet');
+        if(!w){ document.getElementById('claimBtn').disabled=true; document.getElementById('claimBtn').textContent='CONNECT WALLET TO CLAIM →'; document.getElementById('status').textContent='Connect wallet first — one claim per wallet, 40-cap'; return; }
         document.getElementById('claimBtn').disabled=false; document.getElementById('claimBtn').textContent=`CLAIM ${h.name.toUpperCase()} #${h.id} → ENTER PIT`;
         document.getElementById('status').textContent=`Selected: ${h.name} — ${h.bg} / ${h.body} / ${h.eyes} / ${h.aura} → ${h.wep} · ${h.speed}spd`;
       };
     }
     grid.appendChild(el);
   }
+  refreshWalletUI();
 }
 
 document.getElementById('claimBtn').onclick=async()=>{

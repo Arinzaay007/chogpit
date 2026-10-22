@@ -12,7 +12,11 @@ h1{font:900 42px/0.9 'Space Grotesk',system-ui;margin:12px 0 0} h1 em{background
 <div class="wrap">
   <span class="eyebrow">✦ CHOOSE YOUR CHOG — 40 REPLICAS · 02/03</span>
   <h1>PICK YOUR FIGHTER —<br><em>1 OF 40</em></h1>
-  <p style="font:500 12px system-ui;color:#94a3b8;max-width:600px">Chog-inspired replicas (not the 1,969 official). Background / Body / Eyes / Aura → speed / armor / weapon. <b style="color:#a3e635">Sponsor pays gas</b> — mint to your wallet. Choice locks.</p>
+    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+    <button id="connectWalletBtn" style="padding:10px 16px;background:#a3e635;color:#111;border:2px solid #111;border-radius:10px;font:800 11px system-ui;cursor:pointer">◈ CONNECT WALLET</button>
+    <span id="walletAddr" style="padding:10px;color:#a3e635;font:700 11px system-ui"></span>
+  </div>
+<p style="font:500 12px system-ui;color:#94a3b8;max-width:600px;margin-top:8px">Chog-inspired replicas (not the 1,969 official). Background / Body / Eyes / Aura → speed / armor / weapon. <b style="color:#a3e635">Sponsor pays gas — wallet required</b> — mint to YOUR wallet. Choice locks. <span id="holderNote" style="color:#ffd60a"></span></p>
   <div class="grid" id="grid"></div>
   <button class="claim" id="claimBtn" disabled>SELECT A CHOG TO CLAIM →</button>
   <div style="margin-top:10px;font:600 10px system-ui;color:#94a3b8;text-align:center" id="status">Select a Chog — see its weapon & speed</div>
