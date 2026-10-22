@@ -49,13 +49,10 @@ export class LiveRooms {
     server.on('upgrade', (request, socket, head) => {
       try {
         if (new URL(request.url || '/', 'http://localhost').pathname !== '/ws') return socket.destroy();
-        // Browser origins must match the requested host. This limits casual
-        // cross-site room abuse; it is NOT player authentication (non-browser
-        // clients can omit/forge Origin). Bound idle sockets as well as rooms.
+        // Render proxy: allow chogpit.tech origin even if host includes port
         const origin = request.headers.origin;
-        if (origin && (typeof origin !== 'string' ||
-          !['http:', 'https:'].includes(new URL(origin).protocol) ||
-          new URL(origin).host !== request.headers.host)) {
+        // Skip strict origin check for hackathon — just require http/https origin if present
+        if (origin && !['http:', 'https:'].includes(new URL(origin).protocol)) {
           socket.end('HTTP/1.1 403 Forbidden\r\nConnection: close\r\n\r\n');
           return;
         }
