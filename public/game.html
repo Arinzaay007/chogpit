@@ -20,13 +20,15 @@
   </header>
 
   <main class="game-stage" id="gameStage">
-    <!-- hidden stubs for old app.js listeners (prevents null crash) -->
+    <!-- hidden stubs for old app.js (every ID it queries) -->
     <div hidden>
-      <button id="playButton"></button><button id="demoButton"></button><button id="refreshClaimStatus"></button><div id="passJumpButton"></div>
-      <div id="toast" hidden></div><div id="eventFeed" hidden></div>
-      <div id="privyPayoutAddr"></div><div id="sponsorAddr">0x0d362Cf9443D6C2FF7Faa20C11111702e7099FC6</div><div id="vaultAddr">0x371aa93574af4bc140537fe21fa656b788239149</div>
-      <button id="copySponsor"></button><button id="copyVault"></button><button id="passPreviewButton"></button>
-      <div id="previewBalance"></div><div id="claimBadge"></div><div id="privyPayoutNote"></div>
+      <button id="playButton"></button><button id="demoButton"></button><button id="retryButton"></button><button id="resultButton"></button><button id="resultMenuButton"></button><button id="pauseButton"></button><button id="resumeButton"></button><button id="pauseMenuButton"></button>
+      <button id="refreshClaimStatus"></button><div id="passJumpButton"></div><button id="passPreviewButton"></button><div id="privyPayoutAddr"></div><div id="sponsorAddr">0x0d362Cf9443D6C2FF7Faa20C11111702e7099FC6</div><div id="vaultAddr">0x371aa93574af4bc140537fe21fa656b788239149</div><button id="copySponsor"></button><button id="copyVault"></button>
+      <button id="loadArenaButton"></button><input id="arenaInput"/><button id="sharePitButton"></button><div id="pitDossier"></div><div id="pitDossierArt"></div><div id="pitRecentRuns"></div>
+      <button id="walletButton"></button><button id="verifyButton"></button><button id="buildButton"></button><button id="closeBuilder"></button><button id="lockerButton"></button><button id="closeLocker"></button><div id="panelScrim"></div>
+      <button id="saveArenaButton"></button><button id="undoTrapButton"></button><button id="openCrateButton"></button><button id="closeCrateModal"></button><div id="crateModal"></div><button id="claimRewardButton"></button><button id="cycleModButton"></button>
+      <button id="homeButton"></button><div id="toast" hidden></div><div id="eventFeed" hidden></div><div id="previewBalance"></div><div id="claimBadge"></div><div id="privyPayoutNote"></div><div id="lobbyOverlay"></div><div id="resultOverlay"></div><div id="pauseOverlay"></div><div id="builderPanel"></div><div id="lockerPanel"></div><div id="roomOverlay"></div><div id="respawnOverlay"></div><div id="gameHud"></div>
+      <input id="joinCodeInput"/><button id="joinRoomButton"></button><button id="roomStartButton"></button><button id="roomResumeButton"></button><button id="respawnRoomButton"></button><button id="roomLeaveButton"></button><button id="copyRoomLink"></button>
     </div>
     <canvas id="gameCanvas" aria-label="CHOGPIT arena"></canvas><div class="vignette" aria-hidden="true"></div>
 

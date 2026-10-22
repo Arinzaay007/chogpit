@@ -826,26 +826,29 @@ $('sharePitButton').addEventListener('click', async () => {
   catch { toast(`Share this pit: ${url}`); }
 });
 $('demoButton').addEventListener('click', () => loadArena('demo'));
-$('walletButton').addEventListener('click', connectWallet);
-$('verifyButton').addEventListener('click', verifyOwner);
-$('buildButton').addEventListener('click', () => state.live ? showRoomScreen() : openBuilder());
-$('closeBuilder').addEventListener('click', closePanel);
-$('lockerButton').addEventListener('click', openLocker);
-$('closeLocker').addEventListener('click', closePanel);
-$('panelScrim').addEventListener('click', closePanel);
-$('saveArenaButton').addEventListener('click', saveArena);
-$('undoTrapButton').addEventListener('click', () => game.undoTrap());
-$('openCrateButton').addEventListener('click', openCrate);
-$('closeCrateModal').addEventListener('click', () => { $('crateModal').hidden = true; });
-$('claimRewardButton').addEventListener('click', () => { $('crateModal').hidden = true; closePanel(); });
-$('crateModal').addEventListener('click', e => { if (e.target === $('crateModal')) $('crateModal').hidden = true; });
-$('cycleModButton').addEventListener('click', () => { const mods = [...new Set(state.collection)]; if (!mods.length) return; state.equipped = mods[(mods.indexOf(state.equipped) + 1) % mods.length]; updateLocker(); toast(`${state.equipped} equipped.`); });
-const shootButton = $('shootButton');
-let firePointerId = null;
+if($('walletButton')) $('walletButton').addEventListener('click', connectWallet);
+if($('verifyButton')) $('verifyButton').addEventListener('click', verifyOwner);
+if($('buildButton')) $('buildButton').addEventListener('click', () => state.live ? showRoomScreen() : openBuilder());
+if($('closeBuilder')) $('closeBuilder').addEventListener('click', closePanel);
+if($('lockerButton')) $('lockerButton').addEventListener('click', openLocker);
+if($('closeLocker')) $('closeLocker').addEventListener('click', closePanel);
+if($('panelScrim')) $('panelScrim').addEventListener('click', closePanel);
+if($('saveArenaButton')) $('saveArenaButton').addEventListener('click', saveArena);
+if($('undoTrapButton')) $('undoTrapButton').addEventListener('click', () => game.undoTrap());
+if($('openCrateButton')) $('openCrateButton').addEventListener('click', openCrate);
+if($('closeCrateModal')) $('closeCrateModal').addEventListener('click', () => { $('crateModal').hidden = true; });
+if($('claimRewardButton')) $('claimRewardButton').addEventListener('click', () => { $('crateModal').hidden = true; closePanel(); });
+if($('crateModal')) $('crateModal').addEventListener('click', e => { if (e.target === $('crateModal')) $('crateModal').hidden = true; });
+if($('cycleModButton')) $('cycleModButton').addEventListener('click', () => { const mods = [...new Set(state.collection)]; if (!mods.length) return; state.equipped = mods[(mods.indexOf(state.equipped) + 1) % mods.length]; updateLocker(); toast(`${state.equipped} equipped.`); });
+// --- moved early to avoid hoist error in showRoomScreen ---
+var firePointerId = null;
+var shootButton = null;
 function stopFiring(event){
-  if (event?.pointerId !== undefined && firePointerId !== event.pointerId) return;
-  firePointerId = null; game.setFiring(false); shootButton.classList.remove('active');
+  try{ if (event?.pointerId !== undefined && firePointerId !== event.pointerId) return;
+  firePointerId = null; if(game && game.setFiring) game.setFiring(false); if(shootButton) shootButton.classList.remove('active'); }catch{}
 };
+shootButton = $('shootButton');
+if(shootButton){
 shootButton.addEventListener('pointerdown', e => {
   if (firePointerId !== null || !['play', 'online'].includes(game.mode)) return;
   e.preventDefault(); e.stopPropagation(); audio.unlock();
@@ -854,7 +857,8 @@ shootButton.addEventListener('pointerdown', e => {
 });
 for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) shootButton.addEventListener(event, stopFiring);
 window.addEventListener('blur', stopFiring);
-$('touchDash').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); game.dash(); });
+}
+if($('touchDash')) $('touchDash').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); game.dash(); });
 const interactButton = $('interactPrompt');
 interactButton.addEventListener('pointerdown', e => {
   if (!['play', 'online'].includes(game.mode) || interactButton.disabled || interactPointerId !== null) return;
