@@ -130,6 +130,8 @@ function gatewayUrl(uri) {
 async function getMetadata(id) {
   const cached = metadataCache.get(id);
   if (cached && cached.until > Date.now()) return cached.result;
+  // Demo arenas never hit chain — instant
+  if(id==='demo') return { genome:'demo-training', traitLabel:'TRAINING PIT', imageUrl: null, nftName:`CHOG #${id}` };
   let result = { ...nftArenaIdentity(id, null), imageUrl: null, nftName: `CHOG #${id}` };
   try {
     const uri = await client.readContract({ address: NFT_ADDRESS, abi: ABI_TOKEN_URI, functionName: 'tokenURI', args: [BigInt(id)] });
@@ -163,10 +165,12 @@ async function getMetadata(id) {
 }
 async function saveArena(id, arena) {
   arenas[id] = arena;
+  try{
   await mkdir(path.dirname(DATA_PATH), { recursive: true });
   const tmp = DATA_PATH + '.tmp';
   await writeFile(tmp, JSON.stringify(arenas, null, 2));
   await rename(tmp, DATA_PATH);
+  }catch(e){ console.warn('arena save skipped (no persistent disk):', e.message); }
 }
 // Serialize every arena edit through one queue: concurrent PvP finishes and a
 // simultaneous owner save must not lose counters or collide on the .tmp file.
