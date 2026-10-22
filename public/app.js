@@ -417,6 +417,18 @@ async function claimRun() {
   if (state.claimed) return state.live ? showRoomScreen() : startRun();
   const payout = state.payout, summary = state.summary, mark = state.mark;
   state.claimed = true; $('resultButton').disabled = true; $('resultButton').textContent = 'BANKING YOUR HAUL...';
+  // REAL CHOG for holders: 5/10/25 roll per win → 50 auto-payout from vault 0x371a…
+  const w=localStorage.getItem('chogpit.wallet');
+  if(w && summary.won){
+    const roll=Math.random(); const delta= roll<0.70?5: roll<0.95?10:25;
+    try{
+      const r=await fetch('/api/chog/credit',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet:w, delta, runId: state.id+'-'+Date.now()})}).then(r=>r.json());
+      if(r.balance!==undefined){
+        if(r.paid && r.payoutHash) toast(`💰 REAL 50 CHOG SENT → ${w.slice(0,6)}… tx ${r.payoutHash.slice(0,10)}…`, false);
+        else if(!r.paid) toast(`+${delta} CHOG → ${r.balance}/50 until REAL 50 CHOG payout (holder #${r.isHolder?'✓':''})`, false);
+      } else if(r.error && r.error.includes('Not a holder')) toast('Sample +'+delta+' CHOG — claim CHOG #1-40 on /choose.html for REAL 50 CHOG vault', true);
+    }catch{}
+  }
   state.crates += payout.crates; state.rep += payout.score;
   state.bestScore = Math.max(state.bestScore, payout.score);
   updateLocker(); updateCareer();

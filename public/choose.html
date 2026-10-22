@@ -1,25 +1,156 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CHOGPIT — Choose Your Fighter</title><link rel="icon" href="/assets/chogbadge.jpg"/><style>
-*{box-sizing:border-box}body{margin:0;background:#07040e;color:#f1f5f9;font-family:system-ui}
-.wrap{max-width:1100px;margin:0 auto;padding:24px 16px}
-.eyebrow{display:inline-flex;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px;font:700 10px system-ui;color:#c084fc}
-h1{font:900 42px/0.9 'Space Grotesk',system-ui;margin:12px 0 0} h1 em{background:#ffd60a;color:#111;padding:0 8px;border:2px solid #111}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-top:16px}
-.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .12s,border-color .12s} .card:hover{transform:translateY(-3px);border-color:rgba(163,230,53,.5)} .card.selected{border-color:#a3e635;box-shadow:0 0 20px rgba(163,230,53,.3)} .card.claimed{opacity:.35;pointer-events:none}
-.art{height:120px;position:relative;overflow:hidden;background:#111} .art img{width:100%;height:100%;object-fit:cover;opacity:.9} .art .tint{position:absolute;inset:0;opacity:.45} .art .badge{position:absolute;top:8px;left:8px;background:#111;color:#a3e635;border:1px solid rgba(163,230,53,.4);border-radius:6px;padding:3px 6px;font:700 8px system-ui} .art .num{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:white;border-radius:6px;padding:3px 6px;font:700 8px system-ui}
-.meta{padding:10px;text-align:center;background:rgba(0,0,0,.2)} .meta b{font:800 11px system-ui;color:#f1f5f9} .meta small{font:600 8px system-ui;color:#94a3b8}
-.claim{margin-top:16px;width:100%;height:52px;background:#a3e635;color:#0f172a;border:3px solid #111;border-radius:12px;font:1000 13px system-ui;box-shadow:0 6px 0 #111;cursor:pointer} .claim:disabled{opacity:.4;box-shadow:none}
+*{box-sizing:border-box}*{scrollbar-width:thin;scrollbar-color:#a3e635 #111}
+body{margin:0;background:#060510;color:#f1f5f9;font-family:'Space Grotesk',system-ui,-apple-system;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(1200px 600px at 20% -10%, rgba(109,40,217,.55), transparent 60%), radial-gradient(1000px 500px at 90% 10%, rgba(163,230,53,.35), transparent 60%), radial-gradient(800px 400px at 50% 100%, rgba(244,63,94,.25), transparent 60%), linear-gradient(180deg,#0a0a14 0%, #070410 100%);z-index:-2}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.6;pointer-events:none;z-index:-1}
+a{color:inherit}
+.wrap{max-width:1120px;margin:0 auto;padding:22px 16px 40px}
+.top{position:sticky;top:0;z-index:20;backdrop-filter:blur(12px);background:rgba(8,6,20,.7);border-bottom:1px solid rgba(255,255,255,.08);margin:-22px -16px 0;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:36px;height:36px;border-radius:10px;border:2px solid #111;overflow:hidden;background:#ffd60a;display:grid;place-items:center;font:900 16px system-ui}
+.logo img{width:100%;height:100%;object-fit:cover}
+.brand h2{margin:0;font:900 14px/1 system-ui;letter-spacing:.02em} .brand h2 span{color:#a3e635} .brand p{margin:0;font:600 9px system-ui;color:#94a3b8;letter-spacing:.12em;text-transform:uppercase}
+.walletRow{display:flex;align-items:center;gap:8px}
+.walletBtn{padding:10px 16px;background:#a3e635;color:#111;border:2px solid #111;border-radius:999px;font:900 11px system-ui;cursor:pointer;box-shadow:0 4px 0 #111;transition:transform .12s,box-shadow .12s}
+.walletBtn:active{transform:translateY(2px);box-shadow:0 2px 0 #111} .walletBtn:disabled{opacity:.6;cursor:default;transform:none;box-shadow:0 4px 0 #111}
+.walletAddr{font:700 10px system-ui;color:#a3e635;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.heroHead{margin-top:18px;display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:end}
+@media(max-width:860px){.heroHead{grid-template-columns:1fr}}
+.eyebrow{display:inline-flex;gap:8px;align-items:center;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:7px 12px;border-radius:999px;font:800 10px system-ui;color:#c084fc;letter-spacing:.08em}
+h1{margin:12px 0 0;font:900 46px/0.9 system-ui;letter-spacing:-.02em} h1 em{background:linear-gradient(135deg,#ffd60a,#ffb800);color:#111;padding:0 10px;border:2.5px solid #111;box-shadow:4px 4px 0 #111;border-radius:2px;display:inline-block;transform:rotate(-1deg)}
+.sub{margin:10px 0 0;font:500 13px/1.5 system-ui;color:#cbd5e1;max-width:600px}
+.statsBar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.pill{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:8px 12px;font:800 10px system-ui;display:flex;align-items:center;gap:6px}
+.pill b{color:#f1f5f9} .pill em{color:#a3e635;font-style:normal}
+.progress{height:10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.08);border-radius:999px;overflow:hidden;margin-top:10px}
+.progress i{display:block;height:100%;background:linear-gradient(90deg,#a3e635,#06b6d4);width:0%;transition:width .6s cubic-bezier(.22,1,.36,1)}
+.preview{position:sticky;top:76px;background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.45);backdrop-filter:blur(10px)}
+.previewTop{height:260px;position:relative;overflow:hidden;background:#0b0e1a}
+.previewTop img{width:100%;height:100%;object-fit:cover}
+.previewTop .tint{position:absolute;inset:0;opacity:.5}
+.previewTop .glow{position:absolute;inset:auto -20% -30% -20%;height:60%;background:radial-gradient(600px 200px at 50% 0%, rgba(163,230,53,.35), transparent 70%);filter:blur(12px)}
+.badge{position:absolute;top:14px;left:14px;background:#111;color:#a3e635;border:1px solid rgba(163,230,53,.5);border-radius:999px;padding:6px 10px;font:800 10px system-ui;letter-spacing:.06em}
+.num{position:absolute;top:14px;right:14px;background:rgba(0,0,0,.65);backdrop-filter:blur(6px);color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:999px;padding:6px 10px;font:800 10px system-ui}
+.previewMeta{padding:14px 16px}
+.previewMeta h3{margin:0;font:900 18px system-ui} .previewMeta p{margin:4px 0 0;font:600 11px system-ui;color:#94a3b8}
+.traits{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.trait{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:8px;text-align:center}
+.trait b{display:block;font:900 11px system-ui} .trait span{font:700 8px system-ui;color:#94a3b8;letter-spacing:.08em;text-transform:uppercase}
+.weaponRow{margin-top:12px;display:flex;align-items:center;justify-content:space-between;background:#111;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px}
+.weaponRow b{font:900 12px system-ui} .weaponRow small{font:700 9px system-ui;color:#a3e635}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(152px,1fr));gap:12px;margin-top:18px}
+.card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .14s, border-color .14s, box-shadow .14s, filter .14s;position:relative}
+.card:hover{transform:translateY(-4px) scale(1.01);border-color:rgba(163,230,53,.45);box-shadow:0 10px 24px rgba(0,0,0,.35)}
+.card.selected{border-color:#a3e635;box-shadow:0 0 0 2px rgba(163,230,53,.6), 0 12px 28px rgba(163,230,53,.25);transform:translateY(-2px)}
+.card.claimed{opacity:.42;pointer-events:none;filter:grayscale(.25)}
+.card.claimed::after{content:'CLAIMED';position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.62);color:#a3e635;border:2px solid rgba(163,230,53,.6);font:1000 12px system-ui;letter-spacing:.12em}
+.art{height:128px;position:relative;overflow:hidden;background:#0f1220}
+.art img{width:100%;height:100%;object-fit:cover;transition:transform .4s}
+.card:hover .art img{transform:scale(1.08)}
+.art .tint{position:absolute;inset:0;opacity:.45}
+.art .badge{top:8px;left:8px;padding:4px 7px;font:800 8px system-ui}
+.art .num{top:8px;right:8px;padding:4px 7px;font:800 8px system-ui}
+.auraBar{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(180deg,transparent,rgba(0,0,0,.75));color:white;padding:8px 8px 6px;display:flex;justify-content:space-between;align-items:center;font:700 7px system-ui;letter-spacing:.06em}
+.meta{padding:10px 10px 11px;text-align:center;background:rgba(0,0,0,.18)}
+.meta b{font:800 12px system-ui;color:#f1f5f9;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta small{font:600 8px system-ui;color:#94a3b8}
+.meta .weapon{margin-top:4px;display:inline-flex;gap:6px;align-items:center;background:rgba(163,230,53,.12);border:1px solid rgba(163,230,53,.25);color:#a3e635;border-radius:999px;padding:3px 8px;font:800 8px system-ui}
+.claimWrap{margin-top:16px;position:sticky;bottom:16px;z-index:10;background:linear-gradient(180deg,transparent,rgba(6,5,16,.9) 30%);padding-top:12px}
+.claim{width:100%;height:56px;background:linear-gradient(135deg,#a3e635,#22c55e);color:#0b1220;border:3px solid #111;border-radius:14px;font:1000 14px system-ui;letter-spacing:.02em;box-shadow:0 6px 0 #111, 0 10px 24px rgba(163,230,53,.35);cursor:pointer;position:relative;overflow:hidden;transition:transform .12s, box-shadow .12s, filter .12s}
+.claim:hover{transform:translateY(-1px);box-shadow:0 7px 0 #111, 0 14px 28px rgba(163,230,53,.4);filter:brightness(1.02)}
+.claim:active{transform:translateY(2px);box-shadow:0 3px 0 #111, 0 8px 16px rgba(163,230,53,.3)}
+.claim:disabled{background:#1f2937;color:#6b7280;border-color:#111;box-shadow:0 4px 0 #111;filter:none;cursor:not-allowed}
+.claim::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:translateX(-100%);animation:shimmer 2.4s infinite}
+@keyframes shimmer{100%{transform:translateX(100%)}}
+.status{margin-top:10px;text-align:center;font:700 11px system-ui;color:#94a3b8;min-height:16px}
+.modal{position:fixed;inset:0;display:none;place-items:center;background:rgba(4,6,14,.72);backdrop-filter:blur(10px);z-index:50;padding:16px}
+.modal.open{display:grid}
+.modalCard{width:min(520px,100%);background:linear-gradient(180deg,#0f172a,#0b1020);border:1px solid rgba(255,255,255,.12);border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modalArt{height:220px;position:relative;overflow:hidden}
+.modalArt img{width:100%;height:100%;object-fit:cover}
+.modalArt .tint{position:absolute;inset:0;opacity:.5}
+.modalBody{padding:16px}
+.modalBody h3{margin:0;font:900 20px system-ui} .modalBody p{margin:6px 0 0;color:#94a3b8;font:600 11px system-ui}
+.modalActions{display:flex;gap:10px;margin-top:14px}
+.btn{flex:1;height:44px;border-radius:12px;border:2px solid #111;font:900 12px system-ui;cursor:pointer}
+.btnPrimary{background:#a3e635;color:#0f172a;box-shadow:0 4px 0 #111}
+.btnGhost{background:rgba(255,255,255,.06);color:#f1f5f9;border-color:rgba(255,255,255,.12)}
+.confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.confetti i{position:absolute;top:-10px;width:8px;height:14px;border-radius:2px;animation:fall 1.2s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg);opacity:0}}
 </style></head><body>
 <div class="wrap">
-  <span class="eyebrow">✦ CHOOSE YOUR CHOG — 40 REPLICAS · 02/03</span>
-  <h1>PICK YOUR FIGHTER —<br><em>1 OF 40</em></h1>
-    <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-    <button id="connectWalletBtn" style="padding:10px 16px;background:#a3e635;color:#111;border:2px solid #111;border-radius:10px;font:800 11px system-ui;cursor:pointer">◈ CONNECT WALLET</button>
-    <span id="walletAddr" style="padding:10px;color:#a3e635;font:700 11px system-ui"></span>
+  <div class="top">
+    <div class="brand">
+      <div class="logo"><img src="/assets/chogbadge.jpg" alt="" onerror="this.style.display='none'"></div>
+      <div><h2>CHOGPIT<span>.TECH</span></h2><p>Raider Pass — 40 Replicas · Monad 143</p></div>
+    </div>
+    <div class="walletRow">
+      <button id="connectWalletBtn" class="walletBtn">◈ CONNECT WALLET</button>
+      <span id="walletAddr" class="walletAddr"></span>
+    </div>
   </div>
-<p style="font:500 12px system-ui;color:#94a3b8;max-width:600px;margin-top:8px">Chog-inspired replicas (not the 1,969 official). Background / Body / Eyes / Aura → speed / armor / weapon. <b style="color:#a3e635">Sponsor pays gas — wallet required</b> — mint to YOUR wallet. Choice locks. <span id="holderNote" style="color:#ffd60a"></span></p>
+
+  <div class="heroHead">
+    <div>
+      <span class="eyebrow">✦ CHOOSE YOUR CHOG — 40 REPLICAS · 02/03</span>
+      <h1>PICK YOUR FIGHTER —<br><em>1 OF 40</em></h1>
+      <p class="sub">Chog-inspired replicas (not the official 1,969 Genesis). Each Chog rolls <b style="color:#a3e635">Background · Body · Eyes · Aura → Speed · Weapon</b>. Sponsor pays gas — wallet required. Choice locks.</p>
+      <div class="statsBar">
+        <span class="pill">◈ <b id="claimedCount">0</b> <em>/ 40 claimed</em></span>
+        <span class="pill">⚡ <b>Instant</b> <em>CLAIMED grey</em></span>
+        <span class="pill">🎮 <b>1</b> <em>per wallet</em></span>
+        <span class="pill" id="holderNote" style="display:none"></span>
+      </div>
+      <div class="progress"><i id="progressBar"></i></div>
+    </div>
+    <div id="preview" class="preview">
+      <div class="previewTop">
+        <img id="previewImg" src="/assets/chog-pose1.png" alt="" onerror="this.src='/assets/chog1.jpg'">
+        <div id="previewTint" class="tint" style="background:#6d28d9"></div>
+        <div class="glow"></div>
+        <span id="previewBadge" class="badge">MONAD</span>
+        <span id="previewNum" class="num">#01/40</span>
+      </div>
+      <div class="previewMeta">
+        <h3 id="previewName">Select a Chog</h3>
+        <p id="previewSub">Hover the grid — see its weapon & speed</p>
+        <div class="traits">
+          <div class="trait"><span>Speed</span><b id="tSpeed">—</b></div>
+          <div class="trait"><span>Body</span><b id="tBody">—</b></div>
+          <div class="trait"><span>Eyes</span><b id="tEyes">—</b></div>
+          <div class="trait"><span>Aura</span><b id="tAura">—</b></div>
+        </div>
+        <div class="weaponRow"><div><small>WEAPON</small><br><b id="tWeapon">—</b></div><div style="text-align:right"><small>TRAIT</small><br><b id="tTrait">—</b></div></div>
+      </div>
+    </div>
+  </div>
+
   <div class="grid" id="grid"></div>
-  <button class="claim" id="claimBtn" disabled>SELECT A CHOG TO CLAIM →</button>
-  <div style="margin-top:10px;font:600 10px system-ui;color:#94a3b8;text-align:center" id="status">Select a Chog — see its weapon & speed</div>
+
+  <div class="claimWrap">
+    <button class="claim" id="claimBtn" disabled>SELECT A CHOG TO CLAIM →</button>
+    <div class="status" id="status">Select a Chog — see its weapon & speed</div>
+  </div>
 </div>
+
+<div id="successModal" class="modal">
+  <div class="modalCard">
+    <div class="modalArt">
+      <img id="modalImg" src="/assets/chog-pose1.png" alt="">
+      <div id="modalTint" class="tint" style="background:#6d28d9"></div>
+      <div class="confetti" id="confetti"></div>
+    </div>
+    <div class="modalBody">
+      <h3 id="modalTitle">CLAIMED #00 ✓</h3>
+      <p id="modalSub">Reserved on chogpit.tech — entering pit…</p>
+      <div class="modalActions">
+        <button id="enterPitBtn" class="btn btnPrimary">ENTER PIT →</button>
+        <button id="closeModalBtn" class="btn btnGhost">STAY</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="/choose.js"></script>
 </body></html>

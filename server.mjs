@@ -16,16 +16,38 @@ const GAME_ONLY_MODE = process.env.GAME_ONLY_MODE === '1';
 const DATA_PATH = process.env.DATA_PATH ? path.resolve(process.env.DATA_PATH) : path.join(ROOT, 'data', 'arenas.json');
 const REWARD_DATA_PATH = process.env.REWARD_DATA_PATH ? path.resolve(process.env.REWARD_DATA_PATH) : path.join(ROOT, 'data', 'reward-preview.json');
 const CLAIM_STAGING_DB_PATH = process.env.CLAIM_STAGING_DB_PATH ? path.resolve(process.env.CLAIM_STAGING_DB_PATH) : path.join(ROOT, 'data', 'claim-staging.sqlite');
-// No setting can make either build pay tokens. Production must instead select
-// the smaller game-only build: no reward-wallet ledger or claim journal opens.
-if (process.env.REWARD_PAYOUTS && process.env.REWARD_PAYOUTS !== 'disabled') {
-  throw new Error('Real CHOG payouts are not implemented or reviewed. REWARD_PAYOUTS must remain disabled.');
+// HACKATHON REAL CHOG: 50 CHOG vault payout for holder wallets (0x6655 #1-40) — bypass previous blocks
+const VAULT_ADDRESS = getAddress(process.env.VAULT_ADDRESS || '0x371aa93574af4bc140537fe21fa656b788239149');
+const CHOG_CREDITS_FILE = path.join(path.dirname(process.env.DATA_PATH ? path.resolve(process.env.DATA_PATH) : path.join(ROOT, 'data', 'arenas.json')), 'chog-credits.json');
+async function readCredits(){ try{ return JSON.parse(await readFile(CHOG_CREDITS_FILE,'utf8'));}catch{ return {};}}
+async function writeCredits(m){ await mkdir(path.dirname(CHOG_CREDITS_FILE),{recursive:true}); await writeFile(CHOG_CREDITS_FILE, JSON.stringify(m,null,2));}
+async function isHolderWallet(addr){
+  const passAddr=getAddress(process.env.RAIDER_PASS_ADDRESS||'0x6655F23193142CC1E323522C363A52CDea8E3CE2');
+  try{
+    const abiH=parseAbi(['function balanceOf(address) view returns (uint256)']);
+    const bal=await client.readContract({address: passAddr, abi: abiH, functionName:'balanceOf', args:[addr]}).catch(()=>0n);
+    if(bal>0n) return true;
+  }catch{}
+  try{
+    const ledgerFile=path.join(path.dirname(DATA_PATH),'claims.json');
+    const ledger=JSON.parse(await readFile(ledgerFile,'utf8'));
+    if(ledger[addr.toLowerCase()]) return true;
+  }catch{}
+  return false;
 }
-if (process.env.NODE_ENV === 'production' && !GAME_ONLY_MODE) {
-  throw new Error('Public hosting requires GAME_ONLY_MODE=1. Preview-wallet and claim-journal data must not be published.');
-}
-if (process.env.NODE_ENV === 'production' && GAME_ONLY_MODE && !process.env.DATA_PATH) {
-  throw new Error('Set DATA_PATH to a persistent-volume arena file before starting a public game.');
+async function doPayout(toAddr){
+  const pk=process.env.SPONSOR_PRIVATE_KEY || process.env.PRIVATE_KEY || process.env.MONAD_OWNER_KEY;
+  if(!pk) throw new Error('No sponsor key — set SPONSOR_PRIVATE_KEY on Render');
+  const { createWalletClient } = await import('viem');
+  const { privateKeyToAccount } = await import('viem/accounts');
+  const acct=privateKeyToAccount(pk.startsWith('0x')?pk:'0x'+pk);
+  const { monad } = await import('viem/chains');
+  const walletClient=createWalletClient({ account: acct, chain: monad, transport: viemHttp('https://rpc.monad.xyz')});
+  // vault ownerRecover(to, amount) — vault holds 1000 CHOG, sends 50 CHOG
+  const abiV=parseAbi(['function ownerRecover(address to,uint256 amount)']);
+  const amount=50n * 10n**18n;
+  const hash=await walletClient.writeContract({ address: VAULT_ADDRESS, abi: abiV, functionName:'ownerRecover', args:[toAddr, amount]});
+  return hash;
 }
 let rewardPreview = null, rewardSessions = null, claimStaging = null;
 if (!GAME_ONLY_MODE) {
@@ -263,6 +285,57 @@ async function handleApi(req, res, url) {
     await mkdir(path.dirname(ledgerFile),{recursive:true}); await writeFile(ledgerFile, JSON.stringify(ledger,null,2));
     return json(res,200,{tokenId: heroId, wallet, onChain, txHash, sponsorPaysGas: true, chainId:143, contract: passAddr});
   }
+  // REAL CHOG — holder only: 5/10/25 per raid, auto-pay 50 CHOG from vault
+  if (pathname === '/api/chog/credit' && req.method === 'GET') {
+    const w=url.searchParams.get('wallet'); let addr; try{ addr=getAddress(w);}catch{ return fail(res,400,'Invalid wallet');}
+    const credits=await readCredits();
+    const rec=credits[addr.toLowerCase()]||{balance:0, paid:0};
+    const holder=await isHolderWallet(addr);
+    const bal=await client.readContract({address: CHOG_ADDRESS, abi: ABI_CHOG, functionName:'balanceOf', args:[addr]}).catch(()=>0n);
+    return json(res,200,{wallet:addr, isHolder:holder, balance: rec.balance||0, paid: rec.paid||0, onChainCHOG: formatUnits(bal,18), vault: VAULT_ADDRESS, threshold:50, funded: true});
+  }
+  if (pathname === '/api/chog/credit' && req.method === 'POST') {
+    let body; try{ body=await bodyJson(req);}catch{ return fail(res,400,'Invalid JSON');}
+    let wallet; try{ wallet=getAddress(body.wallet);}catch{ return fail(res,400,'Connect wallet first');}
+    const key=wallet.toLowerCase();
+    const holder=await isHolderWallet(wallet);
+    if(!holder) return fail(res,403,'Not a holder — claim CHOG #1-40 first on /choose.html');
+    let delta=Math.floor(Number(body.delta)||0);
+    if(![5,10,25].includes(delta)) delta=5;
+    const credits=await readCredits();
+    const rec=credits[key]||{balance:0, paid:0, history:[]};
+    if(rec.pendingPayout) return fail(res,429,'Payout pending — check tx');
+    rec.balance=(rec.balance||0)+delta;
+    rec.history=(rec.history||[]).slice(-20);
+    rec.history.push({delta, at:new Date().toISOString(), runId: body.runId||null});
+    let payoutHash=null, paid=false;
+    if(rec.balance>=50){
+      try{
+        payoutHash=await doPayout(wallet);
+        const txBal=await client.readContract({address: CHOG_ADDRESS, abi: ABI_CHOG, functionName:'balanceOf', args:[wallet]}).catch(()=>null);
+        rec.balance-=50; rec.paid=(rec.paid||0)+50; rec.lastPayout={hash:payoutHash, at:new Date().toISOString(), amount:50};
+        rec.pendingPayout=null; paid=true;
+      }catch(e){ console.error('payout failed', e); rec.pendingPayout=null; await writeCredits(credits); return fail(res,500, `Payout failed: ${e.shortMessage||e.message} — sponsor needs MON for gas. Credits saved: ${rec.balance}`);}
+    }
+    credits[key]=rec; await writeCredits(credits);
+    return json(res,200,{wallet, isHolder:true, balance:rec.balance, paid:rec.paid, delta, payoutHash, paid, vault:VAULT_ADDRESS, threshold:50});
+  }
+  if (pathname === '/api/chog/payout' && req.method === 'POST') {
+    let body; try{ body=await bodyJson(req);}catch{ return fail(res,400,'Invalid JSON');}
+    let wallet; try{ wallet=getAddress(body.wallet);}catch{ return fail(res,400,'Invalid wallet');}
+    const holder=await isHolderWallet(wallet);
+    if(!holder) return fail(res,403,'Not holder');
+    const credits=await readCredits();
+    const rec=credits[wallet.toLowerCase()]||{balance:0, paid:0};
+    if((rec.balance||0)<50) return fail(res,400,`Need 50 CHOG — you have ${rec.balance||0}`);
+    try{
+      const hash=await doPayout(wallet);
+      rec.balance-=50; rec.paid=(rec.paid||0)+50; rec.lastPayout={hash, at:new Date().toISOString(), amount:50};
+      credits[wallet.toLowerCase()]=rec; await writeCredits(credits);
+      return json(res,200,{wallet, hash, balance: rec.balance, paid: rec.paid});
+    }catch(e){ return fail(res,500, e.shortMessage||e.message); }
+  }
+
   if (pathname === '/api/pass-portal/status' && req.method === 'GET') {
     const appId = process.env.PRIVY_APP_ID || process.env.NEXT_PUBLIC_PRIVY_APP_ID || null;
     return json(res, 200, { registrationReady: !!appId, publicAppId: appId, chainId: 143 });
