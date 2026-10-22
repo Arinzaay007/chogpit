@@ -17,7 +17,7 @@ walletBtn.onclick=async()=>{
   try{
     if(!window.ethereum){ alert('Install MetaMask'); window.open('https://metamask.io/download/','_blank'); return; }
     const a=await window.ethereum.request({method:'eth_requestAccounts'}); localStorage.setItem('chogpit.wallet', a[0]); localStorage.removeItem('chogpit.guest');
-    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}})}
+    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}]});}
     refreshWalletUI();
     // re-enable claim if selection exists
     if(sel){ document.getElementById('claimBtn').disabled=false; document.getElementById('claimBtn').textContent=`CLAIM ${sel.name.toUpperCase()} #${sel.id} → ENTER PIT`; }
