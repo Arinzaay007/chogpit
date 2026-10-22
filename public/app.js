@@ -893,28 +893,19 @@ window.addEventListener('keyup', e => {
 });
 window.addEventListener('blur', () => { keyboardInteract = false; releaseInteract(); });
 
-// Mobile browsers cannot reliably force screen rotation. Keep portrait menus
-// usable, but gate active phone play with a rotate prompt. Practice freezes;
-// the server-run room does not pause for other raiders, so input goes neutral.
-const portraitPhone = matchMedia('(pointer:coarse) and (orientation:portrait) and (max-width:700px)');
+// Keep portrait menus usable, but gate active phone play with a rotate prompt — landscape = play, portrait = rotate
+const portraitPhone = matchMedia('(pointer:coarse) and (orientation:portrait)');
 function syncOrientationGate() {
-  const overlay = $('rotateOverlay');
-  const playing = ['play', 'online'].includes(game.mode) && !$('gameHud').hidden
-    && $('lobbyOverlay').hidden && $('roomOverlay').hidden && $('resultOverlay').hidden
-    && $('pauseOverlay').hidden && $('builderPanel').hidden && $('lockerPanel').hidden
-    && $('crateModal').hidden;
+  const overlay = document.getElementById('rotateOverlay'); if(!overlay) return;
+  const playing = ['play', 'online'].includes(window.game?.mode) && !document.getElementById('gameHud')?.hidden
+    && document.getElementById('lobbyOverlay')?.hidden && document.getElementById('roomOverlay')?.hidden && document.getElementById('resultOverlay')?.hidden;
   const blocked = portraitPhone.matches && playing;
-  const entering = blocked && overlay.hidden;
-  if (entering) { stopFiring(); releaseInteract(); keyboardInteract = false; }
-  game.setOrientationBlocked(blocked);
-  if (overlay.hidden !== !blocked) overlay.hidden = !blocked;
-  if (entering) {
-    $('rotateMatchNote').textContent = state.live
-      ? 'LIVE ROOM CONTINUES · YOUR CONTROLS ARE HELD STILL'
-      : 'SOLO PRACTICE PAUSES WHILE YOU ROTATE';
-    $('rotateMenuButton').innerHTML = state.live ? 'OPEN LIVE ROOM <span>↗</span>' : 'BACK TO MENU <span>↗</span>';
-    $('rotateMenuButton').focus({ preventScroll: true });
-  } else if (!blocked && document.activeElement === $('rotateMenuButton')) $('rotateMenuButton').blur();
+  // Only block portrait, never landscape
+  if(window.game) window.game.setOrientationBlocked(blocked);
+  overlay.hidden = !blocked;
+  if(blocked){
+    document.getElementById('rotateMatchNote').textContent = window.state?.live ? 'LIVE ROOM CONTINUES · YOUR CONTROLS HELD' : 'SOLO PRACTICE PAUSES WHILE YOU ROTATE';
+  }
 }
 $('rotateMenuButton').addEventListener('click', () => state.live ? showRoomScreen() : showLobby());
 const gateObserver = new MutationObserver(syncOrientationGate);
