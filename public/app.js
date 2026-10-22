@@ -751,7 +751,7 @@ async function connectRoom(action) {
 
 let lastLiveShotSound = 0;
 const game = new PitGame($('gameCanvas'), {
-window.game = game; window.PitGame = PitGame;
+  // exposed for inline FIRE button
   onStatus,
   onFinish: showResult,
   onFeed: feed,
@@ -768,7 +768,7 @@ window.game = game; window.PitGame = PitGame;
   onCacheOpen: () => audio.cache(), onLoot: () => audio.pickup(), onPickup: () => audio.pickup(),
   onShoot: () => audio.shoot(), onDash: () => audio.dash(), onHurt: () => audio.hurt(),
   onPause: paused => pauseRun(paused)
-});
+}); window.game=game;
 
 $('homeButton').addEventListener('click', showLobby);
 $('playButton').addEventListener('click', () => {
