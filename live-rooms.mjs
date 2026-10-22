@@ -184,7 +184,7 @@ export class LiveRooms {
     const room = this.rooms.get(code);
     if (!room) return this.error(ws, 'That room code was not found.');
     if (room.mode === 'solo') return this.error(ws, 'Solo rounds cannot be joined.');
-    if (!['waiting', 'finished'].includes(room.phase)) return this.error(ws, 'This round has already started. Ask for the next room code.');
+    if (!['waiting', 'finished', 'countdown'].includes(room.phase)) return this.error(ws, 'Room already fighting — host: LEAVE → CREATE new room for next code.');
     if (room.phase === 'finished') room.players = room.players.filter(connected);
     if (room.players.length >= 4) return this.error(ws, 'This room already has four raiders.');
     const p = this.addPlayer(room, ws, message.name, message.session ?? null);
