@@ -177,11 +177,10 @@ function updateArenaLabels() {
   const vb=document.getElementById('verifyButton'); if(vb){ vb.textContent = demo ? 'DEMO MODE · NO WALLET NEEDED' : state.verified ? '✓ NFT OWNER VERIFIED' : 'VERIFY NFT OWNERSHIP ↗'; vb.disabled = demo || state.verified; }
   if (!state.live) { const bb=document.getElementById('buildButton'); if(bb) bb.textContent = demo ? 'TRAINING BUILDER' : `BUILD NFT #${state.id}`; }
   const soloCard = document.getElementById('soloBountyButton');
-  if(soloCard){ const s=soloCard.querySelector('strong'); if(s){ s.firstChild.textContent = demo ? 'TUTORIAL SERVER SOLO ' : 'SERVER SOLO '; const sp=s.querySelector('span'); if(sp) sp.textContent = demo ? 'TRAINING ONLY' : 'NFT RAID + BOX PREVIEW'; }}
-  soloCard.querySelector('small').textContent = demo
-    ? 'Demo bots · no NFT history · sample-only boxes' : `CHOG #${state.id} · server-verified raid · sample-only boxes`;
-  $('liveEntry').querySelector('.live-mode-card strong').firstChild.textContent = demo ? 'TRAINING LIVE ROOM ' : 'PRIVATE NFT LIVE ROOM ';
-  $('createRoomButton').textContent = demo ? 'CREATE A TRAINING ROOM ↗' : `CREATE ROOM IN NFT #${state.id} ↗`;
+  if(soloCard){ const s=soloCard.querySelector('strong'); if(s){ s.firstChild.textContent = 'SERVER SOLO '; const sp=s.querySelector('span'); if(sp) sp.textContent = 'EARN CHOG'; sp.style.cssText='background:#ffd12d;color:#111;padding:1px 5px;border-radius:4px'; }}
+  soloCard.querySelector('small').textContent = 'Earn CHOG with your NFT — find boxes 5/10/15 auto to wallet';
+  $('liveEntry').querySelector('.live-mode-card strong').firstChild.textContent = 'WITH FRIENDS · EARN CHOG ';
+  $('createRoomButton').textContent = `CREATE ROOM ↗`;
   const art = $('ownerArt'), url = demo ? null : state.arena.imageUrl;
   if (!url) { art.src = '/assets/chogbadge.jpg'; art.dataset.artUrl = ''; }
   else if (art.dataset.artUrl !== url) {
