@@ -108,28 +108,29 @@ function updateCareer() {
 }
 function renderPitDossier() {
   const arena = state.arena, demo = state.id === 'demo';
-  $('pitDossierKicker').textContent = demo ? 'TUTORIAL / OPEN TRAINING PIT' : `ON-CHAIN TOKEN ID #${state.id} · ART NAME BELOW`;
-  $('pitDossierTitle').textContent = demo ? 'TRAINING PIT · NOT AN NFT' : arena.nftName || `CHOG #${state.id}`;
-  $('pitDossierOwner').textContent = demo ? 'Everyone can test building here. Demo scars are training-only.'
-    : `ON-CHAIN OWNER AT LAST LOAD: ${/^0x[0-9a-fA-F]{40}$/.test(arena.owner || '') ? shortAddress(arena.owner) : 'CHECK UNAVAILABLE'} · Only the current owner can sign and save defenses; ownership is rechecked on each save.`;
-  $('pitDossierTraits').textContent = demo ? 'No NFT traits in the tutorial.'
-    : (arena.traitHighlights?.length ? arena.traitHighlights.join(' · ') : 'Traits unavailable · token ID alone seeds the pit');
-  $('pitDossierRoute').textContent = `${game.layoutName || 'OPEN TRAINING PIT'} · ${game.mapCode || '----'}`;
-  $('pitDossierTraps').textContent = `${arena.traps?.length || 0} / 8`;
-  $('pitDossierRaids').textContent = Number(arena.raids) || 0;
-  $('pitDossierClears').textContent = Number(arena.clears) || 0;
-  $('pitDossierScars').textContent = arena.scars?.length || 0;
+  const set = (id, v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  set('pitDossierKicker', demo ? 'TUTORIAL / OPEN TRAINING PIT' : `ON-CHAIN TOKEN ID #${state.id} · ART NAME BELOW`);
+  set('pitDossierTitle', demo ? 'TRAINING PIT · NOT AN NFT' : arena.nftName || `CHOG #${state.id}`);
+  set('pitDossierOwner', demo ? 'Everyone can test building here. Demo scars are training-only.'
+    : `ON-CHAIN OWNER AT LAST LOAD: ${/^0x[0-9a-fA-F]{40}$/.test(arena.owner || '') ? shortAddress(arena.owner) : 'CHECK UNAVAILABLE'} · Only the current owner can sign and save defenses; ownership is rechecked on each save.`);
+  set('pitDossierTraits', demo ? 'No NFT traits in the tutorial.'
+    : (arena.traitHighlights?.length ? arena.traitHighlights.join(' · ') : 'Traits unavailable · token ID alone seeds the pit'));
+  set('pitDossierRoute', `${game.layoutName || 'OPEN TRAINING PIT'} · ${game.mapCode || '----'}`);
+  set('pitDossierTraps', `${arena.traps?.length || 0} / 8`);
+  set('pitDossierRaids', Number(arena.raids) || 0);
+  set('pitDossierClears', Number(arena.clears) || 0);
+  set('pitDossierScars', arena.scars?.length || 0);
   const scarTypes = ['acid', 'static', 'spores'].map(type => {
     const count = arena.scars?.filter(scar => scar.type === type).length || 0;
     return count ? `${count} ${type.toUpperCase()}` : null;
   }).filter(Boolean).join(' · ');
   const last = arena.lastRun;
   const newestScar = arena.scars?.at(-1);
-  $('pitDossierChronicle').textContent = demo
+  const pdChron=document.getElementById('pitDossierChronicle'); if(pdChron) pdChron.textContent = demo
     ? `Training records reset by the host. ${last ? `Last practice: ${last.won ? 'EXTRACTED' : 'FAILED'} · ${last.loot} supplies.` : 'Finish a tutorial run to try a scar.'}`
     : `${scarTypes ? `ACTIVE SCARS: ${scarTypes}. Acid damages, static shoots, spores slow. ` : 'NO ACTIVE SCARS YET. '}${newestScar?.raider ? `LAST MARK: ${newestScar.raider} chose ${newestScar.type.toUpperCase()}. ` : ''}Traps, raids and scars live on this game host under token #${state.id}, NOT on the NFT contract.`;
-  $('pitRecentLabel').textContent = demo ? 'TRAINING HISTORY · TUTORIAL ONLY' : 'RECENT SERVER RAIDS · TOKEN HISTORY';
-  const recentList = $('pitRecentRuns'); recentList.replaceChildren();
+  const prLabel=document.getElementById('pitRecentLabel'); if(prLabel) prLabel.textContent = demo ? 'TRAINING HISTORY · TUTORIAL ONLY' : 'RECENT SERVER RAIDS · TOKEN HISTORY';
+  const recentList = document.getElementById('pitRecentRuns'); if(!recentList) return; recentList.replaceChildren();
   const recentRuns = Array.isArray(arena.recentRuns) && arena.recentRuns.length
     ? arena.recentRuns.slice(0, 5) : last ? [last] : [];
   for (const run of recentRuns) {
@@ -142,8 +143,8 @@ function renderPitDossier() {
   if (!recentRuns.length) {
     const li = document.createElement('li'); li.textContent = demo ? 'NO TRAINING RUNS YET' : 'BE THE FIRST TO RAID THIS NFT PIT'; recentList.append(li);
   }
-  $('sharePitButton').hidden = demo || document.body.dataset.offline === 'true';
-  const art = $('pitDossierArt'), url = demo ? null : arena.imageUrl;
+  const shBtn=document.getElementById('sharePitButton'); if(shBtn) shBtn.hidden = demo || document.body.dataset.offline === 'true';
+  const art = document.getElementById('pitDossierArt'); if(!art) return; const url = demo ? null : arena.imageUrl;
   if (!url) { art.src = '/assets/chogbadge.jpg'; art.dataset.artUrl = ''; }
   else if (art.dataset.artUrl !== url) {
     art.src = '/assets/chogbadge.jpg'; art.dataset.artUrl = url;
@@ -161,22 +162,22 @@ function renderPitDossier() {
 function updateArenaLabels() {
   const demo = state.id === 'demo';
   const label = demo ? 'TRAINING PIT' : `CHOG NFT #${state.id}`;
-  $('arenaHeader').textContent = label;
-  $('miniArena').textContent = demo ? '#DEMO' : `#${state.id}`;
-  $('arenaDescription').textContent = demo ? document.body.dataset.offline === 'true' ? 'OFFLINE TRAINING · NFT ARENAS REQUIRE THE HOSTED GAME' : 'TRAINING PIT · PICK A MINTED NFT ABOVE TO RAID' : `${state.arena.nftName || `CHOG TOKEN #${state.id}`} · ${state.arena.traitLabel || 'NFT ARENA'} · ${game.layoutName}`;
+  const safe = (id, v)=>{ const el=document.getElementById(id); if(el) el.textContent=v; };
+  safe('arenaHeader', label);
+  safe('miniArena', demo ? '#DEMO' : `#${state.id}`);
+  safe('arenaDescription', demo ? document.body.dataset.offline === 'true' ? 'OFFLINE TRAINING · NFT ARENAS REQUIRE THE HOSTED GAME' : 'TRAINING PIT · PICK A MINTED NFT ABOVE TO RAID' : `${state.arena.nftName || `CHOG TOKEN #${state.id}`} · ${state.arena.traitLabel || 'NFT ARENA'} · ${game.layoutName}`);
   const playText = demo ? 'TRY THE TRAINING PIT' : `RAID CHOG NFT #${state.id} · SERVER SOLO`;
-  if ($('playButton').firstChild?.textContent !== playText) {
+  const pb=document.getElementById('playButton');
+  if (pb && pb.firstChild?.textContent !== playText) {
     const arrow = document.createElement('span'); arrow.textContent = '↗';
-    $('playButton').replaceChildren(document.createTextNode(playText), arrow);
+    pb.replaceChildren(document.createTextNode(playText), arrow);
   }
-  $('builderArenaName').textContent = demo ? 'TRAINING PIT' : `${state.arena.nftName || 'CHOG NFT'} · TOKEN ID #${state.id}`;
-  $('verificationStatus').textContent = demo ? 'DEMO BUILDER UNLOCKED' : state.verified ? `OWNER VERIFIED · ${Number(state.chogBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} $CHOG` : 'OWNER VERIFICATION REQUIRED';
-  $('verifyButton').textContent = demo ? 'DEMO MODE · NO WALLET NEEDED' : state.verified ? '✓ NFT OWNER VERIFIED' : 'VERIFY NFT OWNERSHIP ↗';
-  $('verifyButton').disabled = demo || state.verified;
-  if (!state.live) $('buildButton').textContent = demo ? 'TRAINING BUILDER' : `BUILD NFT #${state.id}`;
-  const soloCard = $('soloBountyButton');
-  soloCard.querySelector('strong').firstChild.textContent = demo ? 'TUTORIAL SERVER SOLO ' : 'SERVER SOLO ';
-  soloCard.querySelector('strong span').textContent = demo ? 'TRAINING ONLY' : 'NFT RAID + BOX PREVIEW';
+  safe('builderArenaName', demo ? 'TRAINING PIT' : `${state.arena.nftName || 'CHOG NFT'} · TOKEN ID #${state.id}`);
+  safe('verificationStatus', demo ? 'DEMO BUILDER UNLOCKED' : state.verified ? `OWNER VERIFIED · ${Number(state.chogBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })} $CHOG` : 'OWNER VERIFICATION REQUIRED');
+  const vb=document.getElementById('verifyButton'); if(vb){ vb.textContent = demo ? 'DEMO MODE · NO WALLET NEEDED' : state.verified ? '✓ NFT OWNER VERIFIED' : 'VERIFY NFT OWNERSHIP ↗'; vb.disabled = demo || state.verified; }
+  if (!state.live) { const bb=document.getElementById('buildButton'); if(bb) bb.textContent = demo ? 'TRAINING BUILDER' : `BUILD NFT #${state.id}`; }
+  const soloCard = document.getElementById('soloBountyButton');
+  if(soloCard){ const s=soloCard.querySelector('strong'); if(s){ s.firstChild.textContent = demo ? 'TUTORIAL SERVER SOLO ' : 'SERVER SOLO '; const sp=s.querySelector('span'); if(sp) sp.textContent = demo ? 'TRAINING ONLY' : 'NFT RAID + BOX PREVIEW'; }}
   soloCard.querySelector('small').textContent = demo
     ? 'Demo bots · no NFT history · sample-only boxes' : `CHOG #${state.id} · server-verified raid · sample-only boxes`;
   $('liveEntry').querySelector('.live-mode-card strong').firstChild.textContent = demo ? 'TRAINING LIVE ROOM ' : 'PRIVATE NFT LIVE ROOM ';
