@@ -751,6 +751,7 @@ async function connectRoom(action) {
 
 let lastLiveShotSound = 0;
 const game = new PitGame($('gameCanvas'), {
+window.game = game; window.PitGame = PitGame;
   onStatus,
   onFinish: showResult,
   onFeed: feed,
