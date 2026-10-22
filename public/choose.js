@@ -60,18 +60,8 @@ document.getElementById('claimBtn').onclick=async()=>{
   try{
     const existing=localStorage.getItem('chogpit.claimToken:'+wallet.toLowerCase());
     if(existing){ const data={...sel, id:Number(existing), wallet, claimedAt:new Date().toISOString(), onChain:true}; localStorage.setItem('chogpit.hero', JSON.stringify(data)); localStorage.setItem('chogpit.heroId', String(data.id)); localStorage.setItem('chogpit.passHolder','1'); localStorage.setItem('chogpit.credit','0'); btn.textContent='ALREADY CLAIMED #'+data.id+' → ENTERING PIT…'; setTimeout(()=> location.href='/game.html', 600); return; }
-    // EIP-712 sign as YOU (recipient) — free, no gas
-    const passAddr='0x6655F23193142CC1E323522C363A52Cdea8E3CE2';
-    const nonceRes=await fetch('/api/pass/nonce?wallet='+wallet).then(r=>r.json()).catch(()=>({nonce:0}));
-    const nonce=nonceRes.nonce ?? 0;
-    const deadline=Math.floor(Date.now()/1000)+3600;
-    const domain={name:'CHOGPIT Raider Pass', version:'1', chainId:143, verifyingContract: passAddr};
-    const types={ Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}]};
-    const message={recipient: wallet, nonce: Number(nonce), deadline: Number(deadline)};
-    // Request signature from YOUR wallet (auto pop)
-    const signature=await window.ethereum.request({method:'eth_signTypedData_v4', params:[wallet, JSON.stringify({domain, types, primaryType:'Claim', message})]});
-    btn.textContent='MINTING TO '+wallet.slice(0,6)+'... →';
-    const r=await fetch('/api/pass/claim',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet, heroId: sel.id, deadline, signature})});
+    btn.textContent='RESERVING #'+sel.id+'…';
+    const r=await fetch('/api/pass/claim',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet, heroId: sel.id})});
     const j=await r.json();
     if(!r.ok) throw Error(j.error || 'Claim failed');
     const tokenId=j.tokenId || sel.id;

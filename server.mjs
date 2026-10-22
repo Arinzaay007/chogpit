@@ -254,18 +254,9 @@ async function handleApi(req, res, url) {
     let txHash=null, onChain=false;
     if(sponsorKey){
       try{
-        const { createWalletClient } = await import('viem');
-        const { privateKeyToAccount } = await import('viem/accounts');
-        const account=privateKeyToAccount(sponsorKey.startsWith('0x')?sponsorKey:'0x'+sponsorKey);
-        const walletClient=createWalletClient({ account, chain, transport: viemHttp('https://rpc.monad.xyz')});
-        const abiClaim=parseAbi(['function mintWithConsent(address recipient,uint256 deadline,bytes signature) returns (uint256)','function everClaimed(address) view returns (bool)','function totalSupply() view returns (uint256)','function nonces(address) view returns (uint256)']);
-        const already=await client.readContract({address: getAddress(passAddr), abi: abiClaim, functionName:'everClaimed', args:[wallet]}).catch(()=>false);
-        if(already) return fail(res,409,'This wallet already owns a Pass on-chain');
-        const deadline=body.deadline ? BigInt(body.deadline) : BigInt(Math.floor(Date.now()/1000)+3600);
-        const signature=body.signature;
-        if(!signature || typeof signature!=='string' || !signature.startsWith('0x')) return fail(res,400,'Sign the free consent in your wallet (no gas) — signature missing');
-        txHash=await walletClient.writeContract({ address: getAddress(passAddr), abi: abiClaim, functionName:'mintWithConsent', args:[wallet, deadline, signature]});
-        onChain=true;
+        // HACKATHON BYPASS: on-chain mint via EIP-712 blocked (0x8964e19b) — use off-chain reserve for play, sponsor batch mints 40 later via Remix ownerMintBatch
+        // Keep claimed ledger for CLAIMED grey + Holder Vault, skip on-chain tx to avoid revert
+        txHash=null; onChain=false;
       }catch(e){ console.error('on-chain mint failed', e); return fail(res, 500, `On-chain mint failed: ${e.shortMessage||e.message}. Check sponsor MON balance.`); }
     }
     ledger[key]={tokenId: heroId, wallet, heroId, claimedAt: new Date().toISOString(), txHash};
