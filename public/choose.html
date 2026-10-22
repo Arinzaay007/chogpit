@@ -1,9 +1,21 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CHOGPIT — Choose Your Chog (40)</title><link rel="stylesheet" href="/style.css"><link rel="icon" href="/assets/chogbadge.jpg"><style>
-.wrap{max-width:980px;margin:16px auto;padding:16px;background:var(--cream);border:3px solid var(--ink);border-radius:16px;box-shadow:8px 8px 0 var(--ink)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:10px;margin-top:10px}
-.card{border:3px solid var(--ink);border-radius:12px;overflow:hidden;background:white;cursor:pointer;box-shadow:0 4px 0 var(--ink);transition:transform .08s} .card:hover{transform:translateY(-2px)} .card.selected{outline:3px solid var(--yellow);transform:translateY(-2px)}
-.art{height:110px;position:relative;overflow:hidden;background:#111} .art img{width:100%;height:100%;object-fit:cover;mix-blend-mode:luminosity;opacity:0.9} .art .tint{position:absolute;inset:0;opacity:0.45} .art .badge{position:absolute;top:6px;left:6px;background:var(--yellow);border:2px solid var(--ink);border-radius:6px;padding:2px 6px;font:900 8px var(--mono)} .art .num{position:absolute;top:6px;right:6px;background:white;border:2px solid var(--ink);border-radius:6px;padding:2px 6px;font:900 8px var(--mono)}
-.meta{padding:8px;text-align:center} .meta b{font:1000 10px var(--ui)} .meta small{font:700 8px var(--ui);color:#6b5a73}
-.claim{margin-top:14px;width:100%;height:50px;background:var(--yellow);border:3px solid var(--ink);border-radius:12px;font:1000 12px var(--mono);box-shadow:0 6px 0 var(--ink)} .claim:disabled{opacity:.45;box-shadow:none}
-.top{font:1000 26px var(--ui)}
-</style></head><body style="background:#0e1713"><div class="wrap"><div class="eyebrow"><span class="eyebrow-star">✦</span> CHOOSE YOUR CHOG — 40 REPLICAS <span>02/03</span></div><h1 class="top">PICK YOUR FIGHTER —<br><em style="background:var(--yellow);padding:0 6px;border:2px solid var(--ink)">1 OF 40</em></h1><p style="font:700 10px var(--ui);color:#4a3f45">Each is a Chog-inspired replica (not the 1,969 official). Background / Body / Eyes / Aura → speed / armor / weapon. You sign free consent, <b>sponsor pays gas</b>, mint to your Privy wallet. Choice locks.</p><div class="grid" id="grid"></div><button class="claim" id="claimBtn" disabled>SELECT A CHOG TO CLAIM →</button><div style="margin-top:8px;font:700 8px var(--ui);text-align:center" id="status">Select a Chog — see its weapon & speed</div></div><script type="module" src="/choose.js"></script></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CHOGPIT — Choose Your Fighter</title><link rel="icon" href="/assets/chogbadge.jpg"/><style>
+*{box-sizing:border-box}body{margin:0;background:#07040e;color:#f1f5f9;font-family:system-ui}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px}
+.eyebrow{display:inline-flex;gap:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:999px;font:700 10px system-ui;color:#c084fc}
+h1{font:900 42px/0.9 'Space Grotesk',system-ui;margin:12px 0 0} h1 em{background:#ffd60a;color:#111;padding:0 8px;border:2px solid #111}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(148px,1fr));gap:12px;margin-top:16px}
+.card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden;cursor:pointer;transition:transform .12s,border-color .12s} .card:hover{transform:translateY(-3px);border-color:rgba(163,230,53,.5)} .card.selected{border-color:#a3e635;box-shadow:0 0 20px rgba(163,230,53,.3)} .card.claimed{opacity:.35;pointer-events:none}
+.art{height:120px;position:relative;overflow:hidden;background:#111} .art img{width:100%;height:100%;object-fit:cover;opacity:.9} .art .tint{position:absolute;inset:0;opacity:.45} .art .badge{position:absolute;top:8px;left:8px;background:#111;color:#a3e635;border:1px solid rgba(163,230,53,.4);border-radius:6px;padding:3px 6px;font:700 8px system-ui} .art .num{position:absolute;top:8px;right:8px;background:rgba(0,0,0,.7);color:white;border-radius:6px;padding:3px 6px;font:700 8px system-ui}
+.meta{padding:10px;text-align:center;background:rgba(0,0,0,.2)} .meta b{font:800 11px system-ui;color:#f1f5f9} .meta small{font:600 8px system-ui;color:#94a3b8}
+.claim{margin-top:16px;width:100%;height:52px;background:#a3e635;color:#0f172a;border:3px solid #111;border-radius:12px;font:1000 13px system-ui;box-shadow:0 6px 0 #111;cursor:pointer} .claim:disabled{opacity:.4;box-shadow:none}
+</style></head><body>
+<div class="wrap">
+  <span class="eyebrow">✦ CHOOSE YOUR CHOG — 40 REPLICAS · 02/03</span>
+  <h1>PICK YOUR FIGHTER —<br><em>1 OF 40</em></h1>
+  <p style="font:500 12px system-ui;color:#94a3b8;max-width:600px">Chog-inspired replicas (not the 1,969 official). Background / Body / Eyes / Aura → speed / armor / weapon. <b style="color:#a3e635">Sponsor pays gas</b> — mint to your wallet. Choice locks.</p>
+  <div class="grid" id="grid"></div>
+  <button class="claim" id="claimBtn" disabled>SELECT A CHOG TO CLAIM →</button>
+  <div style="margin-top:10px;font:600 10px system-ui;color:#94a3b8;text-align:center" id="status">Select a Chog — see its weapon & speed</div>
+</div>
+<script type="module" src="/choose.js"></script>
+</body></html>
