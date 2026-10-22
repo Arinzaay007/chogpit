@@ -35,7 +35,7 @@ async function isHolderWallet(addr){
   }catch{}
   return false;
 }
-async function doPayout(toAddr){
+async function doPayout(toAddr, amountChog=50){
   const pk=process.env.SPONSOR_PRIVATE_KEY || process.env.PRIVATE_KEY || process.env.MONAD_OWNER_KEY;
   if(!pk) throw new Error('No sponsor key — set SPONSOR_PRIVATE_KEY on Render');
   const { createWalletClient } = await import('viem');
@@ -43,9 +43,9 @@ async function doPayout(toAddr){
   const acct=privateKeyToAccount(pk.startsWith('0x')?pk:'0x'+pk);
   const { monad } = await import('viem/chains');
   const walletClient=createWalletClient({ account: acct, chain: monad, transport: viemHttp('https://rpc.monad.xyz')});
-  // vault ownerRecover(to, amount) — vault holds 1000 CHOG, sends 50 CHOG
+  // vault ownerRecover(to, amount) — vault holds 1000 CHOG
   const abiV=parseAbi(['function ownerRecover(address to,uint256 amount)']);
-  const amount=50n * 10n**18n;
+  const amount=BigInt(amountChog) * 10n**18n;
   const hash=await walletClient.writeContract({ address: VAULT_ADDRESS, abi: abiV, functionName:'ownerRecover', args:[toAddr, amount]});
   return hash;
 }
@@ -59,10 +59,11 @@ if (!GAME_ONLY_MODE) {
   // Preview-only observation telemetry, never eligible campaign openings.
   claimStaging = new ClaimLedger(CLAIM_STAGING_DB_PATH);
 }
-const sampleOnly = () => {
-  const roll = randomInt(100);
-  return { status: 'sample-only', amount: roll < 70 ? 5 : roll < 95 ? 10 : 25,
-    previewBalance: null, note: 'A non-redeemable game sample. No CHOG or wallet points were awarded.' };
+const sampleOnly = (player) => {
+  // 5 CHOG per box, secret (3rd+ box) higher — holder earns real via instant payout
+  const opened = player?.rewardBoxesOpened || 0;
+  let amount = 5; if(opened >= 3) amount = 15; else if(opened >= 2) amount = 10;
+  return { status: 'sample-only', amount, previewBalance: null, note: `+${amount} CHOG earned with your NFT — auto to wallet` };
 };
 const PORT = Number(process.env.PORT || 4173);
 // A reverse proxy on a VM can keep the Node listener private. Managed hosts
@@ -315,21 +316,16 @@ async function handleApi(req, res, url) {
     if(![5,10,25].includes(delta)) delta=5;
     const credits=await readCredits();
     const rec=credits[key]||{balance:0, paid:0, history:[]};
-    if(rec.pendingPayout) return fail(res,429,'Payout pending — check tx');
-    rec.balance=(rec.balance||0)+delta;
-    rec.history=(rec.history||[]).slice(-20);
-    rec.history.push({delta, at:new Date().toISOString(), runId: body.runId||null});
-    let payoutHash=null, paid=false;
-    if(rec.balance>=50){
-      try{
-        payoutHash=await doPayout(wallet);
-        const txBal=await client.readContract({address: CHOG_ADDRESS, abi: ABI_CHOG, functionName:'balanceOf', args:[wallet]}).catch(()=>null);
-        rec.balance-=50; rec.paid=(rec.paid||0)+50; rec.lastPayout={hash:payoutHash, at:new Date().toISOString(), amount:50};
-        rec.pendingPayout=null; paid=true;
-      }catch(e){ console.error('payout failed', e); rec.pendingPayout=null; await writeCredits(credits); return fail(res,500, `Payout failed: ${e.shortMessage||e.message} — sponsor needs MON for gas. Credits saved: ${rec.balance}`);}
-    }
+    // INSTANT PAYOUT: withdraw whatever you found right after any game
+    let payoutHash=null;
+    try{
+      payoutHash=await doPayout(wallet, delta);
+      rec.paid=(rec.paid||0)+delta; rec.lastPayout={hash:payoutHash, at:new Date().toISOString(), amount:delta};
+      rec.history=(rec.history||[]).slice(-20); rec.history.push({delta, payoutHash, at:new Date().toISOString(), runId: body.runId||null});
+    }catch(e){ console.error('payout failed', e); return fail(res,500, `Payout failed: ${e.shortMessage||e.message} — sponsor needs MON for gas.`);}
+    rec.balance=0; // instant clear since paid
     credits[key]=rec; await writeCredits(credits);
-    return json(res,200,{wallet, isHolder:true, balance:rec.balance, paid:rec.paid, delta, payoutHash, paid, vault:VAULT_ADDRESS, threshold:50});
+    return json(res,200,{wallet, isHolder:true, balance:0, paid:rec.paid, delta, payoutHash, paid:true, vault:VAULT_ADDRESS, threshold:0, instant:true});
   }
   if (pathname === '/api/chog/payout' && req.method === 'POST') {
     let body; try{ body=await bodyJson(req);}catch{ return fail(res,400,'Invalid JSON');}
@@ -553,11 +549,13 @@ const liveRooms = new LiveRooms({
     mode: room.mode, arenaId: room.arena.id
   }),
   onReward: (room, player, box) => {
-    if (GAME_ONLY_MODE) return sampleOnly();
+    if (GAME_ONLY_MODE) return sampleOnly(player);
     const account = rewardSessions.resolve(player.rewardSession);
-    if (!account) return rewardPreview.sampleOnly();
-    return rewardPreview.credit({ account, eventId: `${room.instanceId}:${room.roundNumber}:${box.id}`,
-      mode: room.mode, arenaId: room.arena.id });
+    if (!account) return sampleOnly(player);
+    const r=rewardPreview.credit({ account, eventId: `${room.instanceId}:${room.roundNumber}:${box.id}`, mode: room.mode, arenaId: room.arena.id });
+    // Override to 5 CHOG per box, secret higher
+    if(r && typeof r.amount==='number'){ const o=player?.rewardBoxesOpened||0; r.amount = o>=3?15:o>=2?10:5; r.note=`+${r.amount} CHOG earned with your NFT`; }
+    return r;
   },
   resolveArena: async id => {
     if (!validId(id)) throw new Error('Invalid Chog token ID.');

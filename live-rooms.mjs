@@ -454,9 +454,7 @@ export class LiveRooms {
         break;
       }
       box.opened = true; openedHidden = true; player.rewardBoxesOpened++;
-      this.broadcast(room, { type: 'event', text: this.rewardMode === 'campaign'
-        ? `${player.name} opened a campaign box · proof and CHOG outcome pending publication`
-        : `${player.name} found a hidden preview box · no real CHOG awarded` });
+      this.broadcast(room, { type: 'event', text: `${player.name} found +${(player.rewardBoxesOpened>=3?15:player.rewardBoxesOpened>=2?10:5)} CHOG` });
       Promise.resolve().then(() => this.onReward(room, identity, box, recorded)).then(result => {
         if (this.rewardMode === 'preview' && (result.status === 'preview-credit' || result.status === 'sample-only')
           && Number.isFinite(result.amount)) player.previewAmount += result.amount;
