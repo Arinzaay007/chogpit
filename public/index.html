@@ -47,7 +47,7 @@ btn.onclick=async()=>{
     btn.textContent='Connecting…';
     const a=await window.ethereum.request({method:'eth_requestAccounts'});
     const addr=a[0]; localStorage.setItem('chogpit.wallet', addr); localStorage.removeItem('chogpit.guest');
-    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}})}
+    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}]});}
     btn.textContent='✓ '+addr.slice(0,6)+'...'+addr.slice(-4); st.textContent='Connected — claim your 1 of 40 →';
     setTimeout(()=> location.href='/choose.html', 600);
   }catch(e){ btn.textContent='◈ CONNECT WALLET →'; st.textContent=e.message; }
