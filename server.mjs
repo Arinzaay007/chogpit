@@ -252,7 +252,14 @@ async function handleApi(req, res, url) {
   if (pathname === '/api/pass/claims' && req.method === 'GET') {
     const ledgerFile = path.join(path.dirname(DATA_PATH), 'claims.json');
     let ledger={}; try{ ledger=JSON.parse(await readFile(ledgerFile,'utf8'));}catch{}
-    const claimedIds=Object.values(ledger).map(v=>v.tokenId);
+    let claimedIds=Object.values(ledger).map(v=>v.tokenId);
+    // On-chain fallback: if ledger wiped, also scan 1-40 via ownerOf so CLAIMED survives reset
+    try{
+      const passAddr=getAddress(process.env.RAIDER_PASS_ADDRESS||'0x6655F23193142CC1E323522C363A52Cdea8E3CE2');
+      const abiChk=parseAbi(['function ownerOf(uint256) view returns (address)']);
+      const checks=await Promise.all(Array.from({length:40},(_,i)=> client.readContract({address:passAddr, abi:abiChk, functionName:'ownerOf', args:[BigInt(i+1)]}).then(()=>i+1).catch(()=>null)));
+      for(const id of checks) if(id && !claimedIds.includes(id)) claimedIds.push(id);
+    }catch{}
     return json(res,200,{claimedIds, total: claimedIds.length, max:40});
   }
   if (pathname === '/api/pass/nonce' && req.method === 'GET') {
