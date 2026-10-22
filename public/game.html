@@ -3,152 +3,77 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0e1713" />
-  <meta name="description" content="CHOGPIT: raid a minted Chog NFT's owner-built arena, extract supplies, and leave a scar that changes future fights. No NFT needed to play. No real CHOG payouts." />
-  <title>CHOGPIT — Build. Raid. Scar. Rebuild.</title>
-  <link rel="icon" type="image/jpeg" href="/assets/chogbadge.jpg" />
+  <title>CHOGPIT — Build. Raid. Scar.</title>
+  <link rel="icon" href="/assets/chogbadge.jpg" />
   <link rel="stylesheet" href="/style.css" />
+  <style>
+  .vault-bg{position:fixed;inset:0;z-index:0;pointer-events:none;background:#07040e}
+  .vault-bg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35}
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <button class="brand" id="homeButton" type="button" aria-label="Open main menu"><img src="/assets/chogbadge.jpg" alt="" /><span>CHOG<span>PIT</span></span><small>BETA</small></button>
-    <div class="topbar-center"><span class="online-dot"></span> <span id="gameModeLabel">FREE PLAYTEST · NO CHOG PAYOUTS</span> <i>·</i> <span id="arenaHeader">DEMO ARENA</span></div>
-    <div class="topbar-actions">
-      <button class="nav-button" id="buildButton" type="button">BUILD YOUR PIT</button>
-      <button class="nav-button" id="lockerButton" type="button">MY LOCKER <b id="lockerBadge" hidden>0</b></button>
-      <button class="nav-button sound-toggle" id="soundButton" type="button" aria-pressed="true" aria-label="Toggle sound">♫ ON</button>
-      <button class="wallet-button" id="walletButton" type="button"><span>◈</span><span id="walletLabel">NFT OWNER TOOLS</span></button>
+<header class="topbar">
+  <button class="brand" id="homeButton"><img src="/assets/chogbadge.jpg" alt=""/><span>CHOG<span>PIT</span></span><small>BETA</small></button>
+  <div class="topbar-center"><span class="online-dot"></span> <span id="gameModeLabel">VAULT SEASON · MONAD 143</span> · <span id="arenaHeader">DEMO</span></div>
+  <div class="topbar-actions"><button class="nav-button" id="buildButton">BUILD</button><button class="nav-button" id="lockerButton">LOCKER</button><button class="wallet-button" id="walletButton"><span>◈</span><span id="walletLabel">CONNECT</span></button></div>
+</header>
+<main class="game-stage" id="gameStage">
+<canvas id="gameCanvas"></canvas><div class="vignette"></div>
+<div class="game-hud" id="gameHud" hidden style="pointer-events:none">
+  <div class="hud-top-left"><div class="life-rows"><div class="life-label">HEALTH <b id="hudHpNumber">100</b></div><div class="life-track"><span id="hudHpBar"></span></div><div class="shield-track"><span id="hudShieldBar"></span></div></div><div class="hud-mini-stat"><strong id="hudKills">0</strong><small>ELIMS</small></div><div class="hud-mini-stat"><strong id="hudLoot">0</strong><small>LOOT</small></div></div>
+  <div class="hud-top-center"><span class="match-label">VAULT RAID</span><strong id="hudTime">03:00</strong><span id="hudAlive">ALIVE</span></div>
+  <div class="minimap-wrap"><canvas id="miniMap" width="174" height="126"></canvas><div class="mini-caption"><span id="miniArena">#DEMO</span></div></div>
+  <div class="hud-bottom-left"><div class="weapon-icon" id="weaponIcon">⌖</div><div class="weapon-copy"><small>LEFT CLICK / F</small><strong id="hudWeapon">PEASHOOTER</strong><span id="hudAmmo">∞</span></div></div>
+  <div class="hud-bottom-center" id="missionHint">OPEN 2 SUPPLIES → EXTRACT</div>
+  <div class="hud-bottom-right"><div><small>PACK</small><strong id="hudBag">0/2</strong></div><span id="hudExtract">EXTRACT ▸</span></div>
+  <button class="interact-prompt" id="interactPrompt" hidden style="pointer-events:auto;z-index:30"><span>E</span><strong id="interactText">OPEN</strong><div class="hold-track" id="holdTrack" hidden><i id="holdFill"></i></div></button>
+  <div class="event-feed" id="eventFeed"></div>
+  <div class="touch-stick" id="moveStick"><div class="touch-stick-ring"><span id="moveKnob"></span></div><small>MOVE</small></div>
+  <button class="fire-button" id="shootButton" style="pointer-events:auto;z-index:30" ontouchstart="window.game&&window.game.setFiring(true,true);window.game&&(window.game.touchUsed=true)" ontouchend="window.game&&window.game.setFiring(false)" onpointerdown="window.game&&window.game.setFiring(true,true)" onpointerup="window.game&&window.game.setFiring(false)"><span>⌖</span><strong>FIRE</strong><small>HOLD</small></button>
+  <button class="touch-dash" id="touchDash" style="pointer-events:auto;z-index:30" onclick="window.game&&window.game.dash()"><span>DASH ⚡</span></button>
+  <button class="pause-button" id="pauseButton">Ⅱ PAUSE</button>
+</div>
+<div class="lobby-shade" id="lobbyOverlay">
+  <div class="lobby-card" style="max-width:520px">
+    <div class="eyebrow">✦ CHOGATHON / LIVING NFT ARENAS — 01/02</div>
+    <h1 style="font:900 36px/0.9 system-ui;margin:10px 0 0">OWN THE PIT.<br><em style="background:#ffd60a;color:#111;padding:0 6px;border:2px solid #111">RAID THE DEED.</em><br>LEAVE SCARS.</h1>
+    <p style="font:600 11px/1.5 system-ui;color:#5d5260;margin:8px 0 0">Each Chog NFT = unique battlefield. Owner builds traps. Raiders leave scars. No NFT needed to raid.</p>
+    <div style="margin-top:10px;background:rgba(163,230,53,.12);border:2px solid #a3e635;border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font:800 10px system-ui"><b>01 PICK A PIT</b> · Demo = tutorial · NFT #1,2,100 = real pits</span><span style="background:#111;color:#a3e635;padding:4px 8px;border-radius:6px;font:800 9px system-ui">PICK BELOW</span>
     </div>
-  </header>
-
-  <main class="game-stage" id="gameStage">
-    <canvas id="gameCanvas" aria-label="Scrolling top-down Chogpit shooter arena"></canvas>
-    <div class="vignette" aria-hidden="true"></div>
-
-    <div class="game-hud" id="gameHud" hidden>
-      <div class="hud-top-left">
-        <div class="life-rows"><div class="life-label">HEALTH <b id="hudHpNumber">100</b></div><div class="life-track"><span id="hudHpBar"></span></div><div class="shield-track"><span id="hudShieldBar"></span></div></div>
-        <div class="hud-mini-stat"><strong id="hudKills">0</strong><small>ELIMS</small></div>
-        <div class="hud-mini-stat"><strong id="hudLoot">0</strong><small>LOOT</small></div>
-      </div>
-      <div class="hud-top-center"><span class="match-label" id="matchLabel">FREE BOT PLAYTEST</span><strong id="hudTime">03:00</strong><span id="hudAlive">9 IN THE PIT</span><span class="hud-risk" id="hudRisk">2 SUPPLIES TO BANK · HEAT 0</span></div>
-      <div class="live-score" id="liveScoreboard" hidden><b id="liveScoreHeader">LIVE ROOM</b><div id="liveScoreRows"></div></div>
-      <div class="minimap-wrap"><canvas id="miniMap" width="174" height="126" aria-label="Arena minimap"></canvas><div class="mini-caption">NFT ARENA MAP <span id="miniArena">#DEMO</span></div></div>
-      <div class="hud-bottom-left"><div class="weapon-icon" id="weaponIcon">⌖</div><div class="weapon-copy"><small id="shootHint">LEFT CLICK / F · SHOOT</small><strong id="hudWeapon">PEASHOOTER</strong><span id="hudAmmo">∞ AMMO</span></div><div class="dash-chip" id="hudDash">SPACE · DASH</div></div>
-      <div class="hud-bottom-center" id="missionHint">Open 2 crates with E. Find a gun. Hold E at the exit.</div>
-      <div class="hud-bottom-right"><div><small>YOUR PACK</small><strong id="hudBag">0/2 SUPPLIES</strong></div><span id="hudExtract">EXTRACT ▸</span></div>
-      <button class="interact-prompt" id="interactPrompt" type="button" aria-label="Open nearby supplies or hold to extract" hidden><span class="interact-key">E</span><strong id="interactText">OPEN SUPPLY CRATE</strong><div class="hold-track" id="holdTrack" hidden><i id="holdFill"></i></div></button>
-      <div class="event-feed" id="eventFeed"></div>
-      <div class="touch-stick" id="moveStick" aria-hidden="true"><div class="touch-stick-ring"><span id="moveKnob"></span></div><small>MOVE</small></div>
-      <button class="fire-button" id="shootButton" type="button" aria-label="Hold to fire your weapon" ontouchstart="window.game&&window.game.setFiring(true,true);window.game&&(window.game.touchUsed=true)" ontouchend="window.game&&window.game.setFiring(false)" onpointerdown="window.game&&window.game.setFiring(true,true)" onpointerup="window.game&&window.game.setFiring(false)"><span>⌖</span><strong>FIRE</strong><small>HOLD / LEFT CLICK</small></button>
-      <button class="touch-dash" id="touchDash" type="button" aria-label="Dash" ontouchstart="window.game&&window.game.dash()" onclick="window.game&&window.game.dash()"><span>DASH ⚡</span></button>
-      <button class="pause-button" id="pauseButton" type="button" aria-label="Pause game">Ⅱ <span>PAUSE</span></button>
+    <div class="featured-pits" style="margin-top:8px;display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+      <button data-featured-pit="1"><b>NFT #1</b><small>RAID ↗</small></button>
+      <button data-featured-pit="2"><b>NFT #2</b><small>RAID ↗</small></button>
+      <button data-featured-pit="100"><b>NFT #100</b><small>RAID ↗</small></button>
     </div>
-
-    <div class="respawn-shade" id="respawnOverlay" hidden aria-live="polite"><div class="respawn-card"><span>PRIVATE ROOM · ROUND STILL RUNNING</span><h2>YOU WERE DOWNED.</h2><p>BACK IN <strong id="respawnTime">3s</strong></p><small id="respawnLives">4 OF 5 LIVES LEFT</small><button class="subtle-button" id="respawnRoomButton" type="button">ROOM MENU</button></div></div>
-
-    <div class="pause-shade" id="pauseOverlay" hidden><div class="pause-card"><span>RUN PAUSED</span><h2>TAKE A BREATHER.</h2><p>Your raid is safe until you return. Nothing is banked yet.</p><button class="play-button" id="resumeButton" type="button">RESUME RAID <span>▶</span></button><button class="subtle-button" id="pauseMenuButton" type="button">LEAVE RUN · BACK TO MENU</button></div></div>
-
-    <div class="room-shade" id="roomOverlay" hidden><section class="room-card" aria-label="Private live room">
-      <span class="result-kicker" id="roomKicker">PRIVATE LIVE ROOM · 2–4 RAIDERS</span>
-      <h2 id="roomTitle">GATHER YOUR CREW.</h2><p id="roomStatus">Share a code to invite friends into one Chog NFT arena.</p>
-      <div class="room-code-line"><strong id="roomCode">······</strong><button id="copyRoomLink" type="button">COPY INVITE ↗</button></div>
-      <small class="room-arena" id="roomArena">DEMO PIT</small>
-      <div class="room-mode-chooser" id="roomModeChooser" hidden><b>ROUND TYPE · HOST CHOOSES</b><div class="room-mode-options" role="group" aria-label="Private-room mode">
-        <button type="button" id="roomModePvp" data-room-mode="pvp" aria-pressed="true"><strong>⚔ FIGHT EACH OTHER</strong><small>PvP · friendly fire on</small></button>
-        <button type="button" id="roomModeCoop" data-room-mode="coop" aria-pressed="false"><strong>✦ FIGHT THE BOTS</strong><small>Co-op · friendly fire off</small></button>
-      </div><small id="roomModeHint" aria-live="polite">Invite a friend, then the host picks a mode.</small></div>
-      <div class="room-player-list" id="roomPlayers" aria-live="polite"></div>
-      <button class="play-button" id="roomStartButton" type="button" disabled>START LIVE ROUND <span>↗</span></button>
-      <button class="play-button" id="roomResumeButton" type="button" hidden>RETURN TO LIVE PIT <span>↗</span></button>
-      <button class="subtle-button" id="roomLeaveButton" type="button">LEAVE ROOM</button>
-      <p class="room-fineprint" id="roomFineprint">3 minutes · collect 2 supplies and extract · 5 lives total (4 respawns) each. The server decides hits, loot and scores; preview boxes never pay real CHOG.</p>
-    </section></div>
-
-    <div class="lobby-shade" id="lobbyOverlay">
-      <div class="lobby-card">
-        <div class="eyebrow"><span class="eyebrow-star">✦</span> CHOGATHON / LIVING NFT ARENAS <span>01 / 02</span></div>
-        <h1>OWN THE PIT.<br /><em>RAID THE DEED.</em><br />LEAVE SCARS.</h1>
-        <p class="lobby-lede">Each minted Chog NFT is a different, owner-built battlefield. Its token ID and available metadata traits shape the routes (a token-only fallback appears if metadata cannot load); its current owner controls traps; successful raiders leave scars that change later fights. <strong>No NFT is needed to raid.</strong> Pick a minted pit below—or use the demo as a tutorial.</p>
-        <a href="/hero-claim.html" class="pass-jump" style="display:flex;text-decoration:none;justify-content:space-between"><span>✦ CLAIM YOUR HERO FIRST — YOUR NFT FIGHTER</span><small>EMAIL → AUTO WALLET → RANDOM HERO → CHOOSE RAID/FRIENDS ↘</small></a>
-        <button class="pass-jump" id="passJumpButton" type="button"><span>✦ TRY SAMPLE RAIDER PASS</span><small>BROWSER ONLY · NO NFT MINT ↘</small></button>
-        <section class="nft-entry" aria-labelledby="nftEntryTitle">
-          <div class="nft-entry-title"><span>01 / PICK A REAL CHOG ARENA</span><strong id="nftEntryTitle">A TOKEN IS THE LEVEL.</strong></div>
-          <p>These public examples were minted when checked. Opening one rechecks its on-chain owner; they are not owned or endorsed by CHOGPIT.</p>
-          <div class="featured-pits" aria-label="Try a minted Chog arena">
-            <button type="button" data-featured-pit="1">RAID NFT <b>#1</b><small>VERIFY &amp; LOAD ↗</small></button>
-            <button type="button" data-featured-pit="2">RAID NFT <b>#2</b><small>VERIFY &amp; LOAD ↗</small></button>
-            <button type="button" data-featured-pit="100">RAID NFT <b>#100</b><small>VERIFY &amp; LOAD ↗</small></button>
-          </div>
-          <div class="lobby-form"><label for="arenaInput">OR ENTER ANY MINTED CHOG NFT TOKEN ID</label><div class="input-row"><span>#</span><input id="arenaInput" type="text" inputmode="numeric" maxlength="7" placeholder="TOKEN ID  ·  NO WALLET NEEDED TO RAID" /><button id="loadArenaButton" type="button" aria-label="Load NFT arena">GO ↗</button></div><div id="arenaDescription" class="arena-description">TRAINING PIT · CHOOSE A MINTED NFT TO RAID</div></div>
-          <div class="pit-dossier" id="pitDossier" aria-live="polite">
-            <img id="pitDossierArt" src="/assets/chogbadge.jpg" alt="Selected Chog NFT arena art" />
-            <div class="pit-dossier-info"><small id="pitDossierKicker">TUTORIAL / NO NFT SELECTED</small><h2 id="pitDossierTitle">TRAINING PIT</h2>
-              <p id="pitDossierOwner">Choose a minted Chog above. Only the current on-chain owner can save defenses.</p>
-              <p id="pitDossierTraits">No NFT traits in the tutorial.</p>
-              <div class="pit-dossier-stats"><span>ROUTE <b id="pitDossierRoute">OPEN TRAINING PIT</b></span><span>DEFENSES <b id="pitDossierTraps">3 / 8</b></span><span>RAIDS <b id="pitDossierRaids">0</b></span><span>CLEARS <b id="pitDossierClears">0</b></span><span>SCARS <b id="pitDossierScars">0</b></span></div>
-              <p id="pitDossierChronicle">NFT arena raids and scars persist on this game's host by token ID; they are not written to NFT metadata.</p>
-              <div class="pit-recent"><b id="pitRecentLabel">RECENT RAIDS · HOST-SAVED</b><ol id="pitRecentRuns"></ol></div>
-              <button id="sharePitButton" type="button" hidden>SHARE THIS NFT PIT ↗</button>
-            </div>
-          </div>
-          <button class="play-button primary-pit-action" id="playButton" type="button">TRY THE TRAINING PIT <span>↗</span></button>
-        </section>
-        <section class="hero-entry" aria-labelledby="heroTitle">
-          <div class="nft-entry-title"><span>01b / PICK YOUR HERO — NFT IS THE FIGHTER</span><strong id="heroTitle">YOUR MINT = YOUR HERO</strong></div>
-          <p>Every <b>CHOGPIT Hero</b> mint is your fighter — we replica CHOG’s face system (Background / Body / Eyes / Aura → speed, armor, weapon). <b>Guest without hero still raids</b> as default raider. Official Chog Genesis <code style="font-size:8px">0xc96d…3763</code> holders get a gold badge only (read-only <code>ownerOf</code> on Monad 143).</p>
-          <div class="hero-grid" id="heroGrid" role="group" aria-label="Pick your hero"></div>
-          <div class="hero-active" id="heroActive">ACTIVE: Default Raider (no hero needed)</div>
-          <small>CHOGPIT Hero is the hackathon replica (500 max, distinct from 40 Raider Pass & 1,969 official Chog). No real mint live — these 4 are browser samples. Real mint uses Privy embedded wallet when enabled.</small>
-        </section>
-        <section class="pass-entry" aria-labelledby="passEntryTitle">
-          <div class="pass-art" aria-hidden="true"><span>CHOGPIT</span><b>✦</b><strong>RAIDER<br />PASS</strong><small id="passArtSerial"># PREVIEW</small></div>
-          <div class="pass-copy"><span class="pass-kicker">02 / A PASS FOR THE RAIDER · NOT THE ARENA DEED</span><h2 id="passEntryTitle">A FREE PASS. A REAL CHOG PIT.</h2>
-            <p>The Chog NFT still builds the battlefield. A separate, free <b>CHOGPIT Raider Pass</b> is planned as a genuine Monad NFT: register for a user-controlled embedded wallet, then deliberately claim in a portal (40 passes maximum). The issuer would pay mint gas; the player signs non-spending consent. <strong>Registration, embedded wallets and real mints are NOT live yet.</strong></p>
-            <div class="pass-actions"><button id="passPreviewButton" type="button">TRY SAMPLE PASS ↗</button><button id="passMintButton" type="button" disabled title="No Raider Pass contract or issuer is deployed">REAL NFT MINT NOT LIVE</button></div>
-            <p class="pass-status" id="passPreviewStatus" role="status">NO SAMPLE PASS YET · GAMEPLAY IS OPEN TO EVERYONE</p>
-            <small>Sample pass = browser-only illustration, NOT an NFT or CHOG claim. A future real CHOG payout would require the box-opening raider to hold the <b>real minted Raider Pass before payment</b>. No pass or wallet is required to raid or open sample boxes.</small>
-          </div>
-        </section>
-        <div class="mode-card" id="raidCard"><span class="mode-icon">⌖</span><div><strong>RAID · YOUR NFT FIGHTER <span>LIVE PIT</span></strong><small>Your claimed CHOG hero raids any NFT pit · loot boxes 5/10/25 → cashout 50 CHOG</small></div><b>RAID</b></div>
-        <button class="mode-card reward-solo-card" id="soloBountyButton" type="button"><span class="mode-icon">◈</span><span><strong>SERVER SOLO <span>HIDDEN-BOX PREVIEW</span></strong><small>Server-run bots · explore for secret boxes · no real CHOG</small></span><b>TRY ↗</b></button>
-        <details class="live-entry" id="liveEntry" open><summary class="mode-card live-mode-card"><span class="mode-icon">⚔</span><div><strong>WITH FRIENDS · 2 MODES <span>VS BOT / VS EACH OTHER</span></strong><small>Host picks: ✦ FIGHT THE BOTS (co-op) or ⚔ FIGHT EACH OTHER (PvP) · 5 lives each</small></div><b>2–4</b></summary><div class="live-entry-body"><label for="liveName">YOUR RAIDER NAME</label><input id="liveName" type="text" maxlength="16" autocomplete="nickname" placeholder="YOUR NAME" value="RAIDER" /><button class="live-action" id="createRoomButton" type="button">CREATE ROOM IN THIS ARENA ↗</button><div class="live-join-row"><input id="joinCodeInput" type="text" maxlength="6" autocomplete="off" autocapitalize="characters" placeholder="INVITE CODE" aria-label="Six-character room code" /><button id="joinRoomButton" type="button">JOIN ↗</button></div><p>Create a room in the selected arena, then host chooses PvP or co-op against bots when a friend joins. Collect 2 supplies and extract within 3 minutes; 5 lives total each. No payout wallet needed.</p></div></details>
-        <div class="offline-live-note" id="offlineLiveNotice" hidden>SERVER SOLO, LIVE ROOMS AND HIDDEN PREVIEW BOXES NEED THE HOSTED APP · SOLO PRACTICE WORKS OFFLINE</div>
-        <details class="reward-guide" id="rewardGuide"><summary><span>▣ HIDDEN BOXES · CHOG PREVIEW</span><b id="previewBalance">0 PREVIEW</b></summary><div><p>Server solo rounds and both private-room modes each hide four free boxes per round. Find one and press E or OPEN. This hosted playtest samples 5 CHOG (70%), 10 (25%) or 25 (5%). They are examples only, not awarded CHOG; no payout wallet connection is needed or offered here.</p><p><strong>NO REAL CHOG IS FUNDED, AWARDED OR CLAIMABLE HERE.</strong> Preview points never convert into tokens, even if a real campaign launches later. No NFT, purchase, wallet connection or paid opening is needed to play and open sample boxes. Under a proposed future campaign, only the <strong>raider who opened the box</strong> could receive real CHOG, and only after proving they hold a <strong>real, minted CHOGPIT Raider Pass before payout</strong>—not at opening. A browser sample pass does not qualify. The owner of the raided pit does not receive that raider's reward. Proposed email sign-in, post-opening address confirmation, a two-opening-record limit per email (NOT per person) and automatic payout at 50 CHOG are <strong>not live</strong>; email alone does not prove Raider Pass ownership. The real pass contract, holder-at-payment check and handling of unverified slots are not deployed or decided.</p></div></details>
-        <details class="claim-guide" id="claimGuide"><summary><span>◉ FUTURE $CHOG PAYOUTS</span><b id="claimBadge">NOT LIVE</b></summary><div><p id="claimExplanation">Real CHOG would require funded backed slots, a secure reward service, published rules and a sponsor that actually pays. CHOG in the owner's personal wallet is not available to players here. No live claims, email registration or real prize openings exist on this preview.</p><button id="refreshClaimStatus" type="button">CHECK PAYOUT STATUS ↗</button><div id="privyPayoutNote" style="margin-top:6px;font:900 8px var(--mono);color:#6b5a73;background:#fff9eb;border:1px dashed #c9b9a0;border-radius:6px;padding:6px">Payout goes to your <b>Privy embedded wallet</b> (created at email register). No extra wallet to link — sponsor sends CHOG to that address when you hold the 40-cap Raider Pass at payout. <span id="privyPayoutAddr">Not registered yet — register with email first.</span></div>
-        <div class="fund-panel" id="fundPanel" style="margin-top:10px;padding:8px;border:1px dashed #8a7a8a;border-radius:8px;background:#fffef6"><b style="font:900 9px var(--mono)">VAULT FUNDING — 1,000 CHOG target</b><div style="margin-top:6px;font:800 9px var(--mono);word-break:break-all">Gas sponsor (MON): <span id="sponsorAddr">0x0d362Cf9443D6C2FF7Faa20C11111702e7099FC6</span> <button id="copySponsor" type="button" style="margin-left:6px;padding:3px 6px;font:900 8px var(--mono)">COPY</button></div><div style="margin-top:4px;font:800 9px var(--mono);word-break:break-all">Vault (CHOG holder-aware): <span id="vaultAddr">NOT DEPLOYED — holder-aware draft only</span> <button id="copyVault" type="button" style="margin-left:6px;padding:3px 6px;font:900 8px var(--mono)">COPY</button></div><div id="fundStatus" style="margin-top:6px;font:900 8px var(--mono);color:#7a3a69">Status: NOT FUNDED · 0/1,000 CHOG · preview boxes never credit</div></div>
-        <a class="claim-portal-link" href="/claim.html">READ FUTURE REWARD PROPOSAL ↗</a><small>No wallet needed to play or open sample boxes. A future real payout would require holding the minted Raider Pass in your Privy wallet before payment; preview boxes never become campaign credits.</small></div></details>
-        <details class="nft-guide"><summary><span class="nft-guide-icon">◈</span><span class="nft-guide-copy"><b>CHOG NFT = ARENA DEED</b><small>Owner sets traps · raiders leave scars</small></span><span class="nft-guide-plus">+</span></summary><p>The token is the level: Its token ID and available NFT traits seed its routes; the current on-chain owner signs the exact layout to save up to 8 defenses. After a successful server raid, a raider can leave an acid, static or spores scar that changes later fights. Ownership of the pit's builder rights follows the NFT on each save. Arena traps, raid counts and scars persist on this game host keyed by token ID, NOT on the NFT contract. Holding 100 $CHOG unlocks only the optional Pulse Coil builder trap; a CHOG-token balance or arena ownership alone would not satisfy the proposed future Raider Pass holder payout check. Anyone can raid without an NFT. The demo is a tutorial; offline play cannot verify ownership.</p></details>
-        <div class="controls-strip" aria-label="Game controls"><span><kbd>WASD</kbd> MOVE</span><span class="controls-fire"><kbd>LEFT CLICK</kbd> SHOOT</span><span><kbd>E</kbd> LOOT</span><span class="touch-controls-copy">LEFT THUMB MOVE · SWIPE RIGHT AIM/FIRE · FIRE AUTO-AIMS</span></div>
-        <div class="stakes-strip" aria-label="Free crate reward tiers"><span><b>1 CRATE</b><small>2 SUPPLIES</small></span><span><b>2 CRATES</b><small>4 SUPPLIES OR 2 ELIMS</small></span><span><b>3 CRATES</b><small>6 SUPPLIES + 2 ELIMS</small></span></div>
-        <div class="career-line"><span>BEST <b id="lobbyBest">0</b> · PIT REP <b id="lobbyRep">0</b></span><small>EXTRA LOOT SUMMONS HUNTERS · DEATH LOSES HAUL</small></div>
-        <div class="lobby-bottom"><span>SPACE DASH · R RELOAD · HOLD E AT EXIT</span><button id="demoButton" type="button">OPEN TRAINING PIT →</button></div>
-      </div>
-      <div class="lobby-aside"><div class="asides-label">THE NFT LOOP</div><div><b>01</b><span>CHOG NFT TRAITS<br />SHAPE THE PIT</span></div><div><b>02</b><span>CURRENT OWNER<br />BUILDS DEFENSES</span></div><div><b>03</b><span>RAIDERS EXTRACT<br />AND LEAVE SCARS</span></div><p>Come back: the next fight inherits this token's defenses and scars. You need no NFT to raid; the demo pit teaches the controls.</p></div>
+    <div class="input-row" style="margin-top:8px;display:flex;border:2px solid #111;border-radius:8px;overflow:hidden"><span style="padding:8px;background:#ffd60a">＃</span><input id="arenaInput" placeholder="ENTER CHOG NFT ID e.g. 427" style="flex:1;padding:8px;border:0"><button id="loadArenaButton" style="padding:8px 12px;background:#ffd60a;border-left:2px solid #111">GO ↗</button></div>
+    <div id="arenaDescription" style="font:700 9px system-ui;color:#746077;margin-top:4px"></div>
+    <div id="holderVaultCard" hidden style="margin-top:8px;background:linear-gradient(135deg,rgba(163,230,53,.15),rgba(255,214,10,.12));border:2px solid #a3e635;border-radius:10px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+      <span><b style="color:#a3e635">◈ HOLDER VAULT — 5/10/25 → 50 CHOG REAL</b><br><small>Vault 0x371a… 1000 CHOG · sponsor gas</small></span><b style="background:#a3e635;color:#111;padding:6px 10px;border-radius:8px">HOLDER</b>
     </div>
-
-    <div class="result-shade" id="resultOverlay" hidden>
-      <div class="result-card"><span class="result-kicker" id="resultKicker">RUN COMPLETE</span><h2 id="resultTitle">YOU MADE IT OUT.</h2><p id="resultDescription">Your raid changes this arena.</p><div class="result-stats"><div><b id="resultKills">0</b><span>ELIMS</span></div><div><b id="resultLoot">0</b><span>SUPPLIES</span></div><div><b id="resultTime">00:00</b><span>SURVIVED</span></div><div><b id="resultScore">0</b><span>SCORE</span></div></div><div class="result-payout" id="resultPayout">1 FREE CRATE + PIT REP</div><div class="result-preview" id="resultPreview" hidden>HIDDEN-BOX PREVIEW · NO REAL CHOG OR WITHDRAWALS</div><div class="result-live-standings" id="resultLiveStandings" hidden><b>ROOM STANDINGS · BANKED SCORE WINS</b><div id="resultLiveRows"></div></div><div id="mutationPicker" class="mutation-picker"><span id="scarLabel">LEAVE A SCAR ON THIS ARENA</span><div><button class="selected" data-mark="acid" type="button">◈ ACID</button><button data-mark="static" type="button">ϟ STATIC</button><button data-mark="spores" type="button">✳ SPORES</button></div></div><button class="play-button" id="resultButton" type="button">CLAIM FREE CRATE <span>↗</span></button><button class="subtle-button" id="retryButton" type="button">DROP BACK IN →</button><button class="subtle-button" id="resultMenuButton" type="button">BACK TO MENU</button></div>
+    <div id="holderLocked" style="margin-top:8px;background:rgba(255,255,255,.04);border:1px dashed #aaa;border-radius:10px;padding:8px;text-align:center;font:700 9px system-ui"><a href="/choose.html" style="color:#ffd60a">Claim CHOG #1-40</a> to earn real CHOG</div>
+    <div style="margin-top:10px;border:2px solid #453047;border-radius:10px;padding:10px;background:#e9f2d5">
+      <b style="font:900 10px system-ui">02 PICK YOUR MODE</b><br>
+      <button class="mode-card" id="soloBountyButton" style="width:100%;margin-top:8px;background:#fff"><span class="mode-icon">◈</span><span><strong>SOLO RAID</strong><small>vs bots · 3:00 · 2 supplies · 5 lives</small></span><b>RAID ↗</b></button>
+      <details open style="margin-top:8px;border:2px solid #111;border-radius:10px;overflow:hidden"><summary style="padding:8px;background:#ffd60a;font:900 10px system-ui;cursor:pointer">⚔ FRIENDS CODE · 2-4 · vs BOT / vs EACH OTHER</summary>
+        <div style="padding:8px;background:#fff"><input id="liveName" value="RAIDER" maxlength="16" style="width:100%;padding:8px;border:2px solid #111;border-radius:6px"><button id="createRoomButton" style="width:100%;margin-top:6px;padding:10px;background:#ffd60a;border:2px solid #111;border-radius:8px;font:900 10px system-ui">CREATE ROOM ↗</button><div style="display:flex;gap:6px;margin-top:6px"><input id="joinCodeInput" placeholder="CODE" maxlength="6" style="flex:1;padding:8px;border:2px solid #111;border-radius:6px"><button id="joinRoomButton" style="padding:8px 12px;background:#0f172a;color:#fff;border-radius:6px">JOIN ↗</button></div></div>
+      </details>
     </div>
-
-    <div class="panel-scrim" id="panelScrim" hidden></div>
-    <aside class="side-panel builder-panel" id="builderPanel" hidden aria-label="NFT arena builder"><div class="panel-head"><span>OWNER MODE / ARENA BUILDER</span><button id="closeBuilder" type="button" aria-label="Close builder">×</button></div><h2>MAKE THE PIT<br /><em>YOUR PROBLEM.</em></h2><p>A Chog NFT is an arena deed—not your fighter. In real pits, only the current verified owner can save traps; this demo builder is open to everyone. Pick a defense, tap open terrain to place it, or tap a trap to remove it. Drag the map to pan; no tokens are spent.</p><div class="owner-box"><img id="ownerArt" src="/assets/chogbadge.jpg" alt="Chog NFT art" /><div><small>ACTIVE ARENA</small><strong id="builderArenaName">#DEMO</strong><span id="verificationStatus">DEMO BUILDER UNLOCKED</span></div></div><button id="verifyButton" class="verify-button" type="button">VERIFY NFT OWNERSHIP ↗</button><div class="trap-heading">DEFENSE MODULES <span id="trapCount">3 / 8 PLACED</span></div><div class="trap-list"><button data-trap="turret" class="selected" type="button"><b>⌖</b><span>SENTRY<small>TRACKING TURRET</small></span></button><button data-trap="mine" type="button"><b>✸</b><span>POP MINE<small>AREA DAMAGE</small></span></button><button data-trap="slime" type="button"><b>◉</b><span>GOO PATCH<small>SLOWS RAIDERS</small></span></button><button data-trap="pulse" type="button"><b>ϟ</b><span>PULSE COIL<small>HOLD 100 $CHOG</small></span></button></div><div class="panel-actions"><button id="undoTrapButton" type="button">UNDO</button><button id="saveArenaButton" type="button">SAVE ARENA ↗</button></div><p class="panel-note" id="builderNote">Demo mode saves locally to this playtest server. No real tokens are spent.</p></aside>
-
-    <aside class="side-panel locker-panel" id="lockerPanel" hidden aria-label="Loot locker"><div class="panel-head"><span>THE LOCKER / EARNED LOOT</span><button id="closeLocker" type="button" aria-label="Close locker">×</button></div><h2>YOUR HARD-EARNED<br /><em>GOOD STUFF.</em></h2><p>Bank 2 supplies for 1 free crate. A bigger haul or more eliminations earns 2–3. Mods change your look only—no paid drops or token payouts. Hidden-box test balances are separate from cosmetic crates and are not redeemable.</p><div class="crate-tile"><span>▣</span><div><strong id="crateCount">0</strong><small>FREE CRATES READY</small></div></div><div class="career-tile"><div><small>PIT REP · LOCAL</small><strong id="lockerRep">0</strong></div><div><small>BEST RAID SCORE</small><strong id="lockerBest">0</strong></div></div><button class="play-button" id="openCrateButton" type="button" disabled>OPEN A CRATE <span>↗</span></button><div class="locker-rule"></div><div class="mod-label">EQUIPPED MOD</div><strong id="equippedMod">NONE</strong><button id="cycleModButton" class="verify-button" type="button" disabled>SWAP UNLOCKED MOD ↻</button><p class="panel-note" id="collectionCount">0 MODS DISCOVERED</p></aside>
-
-    <div class="crate-modal-wrap" id="crateModal" hidden><div class="crate-modal"><button id="closeCrateModal" class="modal-close" type="button" aria-label="Close">×</button><span class="result-kicker">FREE EARNED CRATE // OPENED</span><div class="reward-glyph" id="rewardSigil">✦</div><span class="reward-rarity" id="rewardRarity">RARE MOD</span><h2 id="crateModalTitle">NEON AFTERBURN</h2><p id="rewardDescription">A new cosmetic for your next run.</p><button class="play-button" id="claimRewardButton" type="button">BACK TO THE PIT <span>↗</span></button></div></div>
-    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
-  </main>
-  <div class="rotate-shade" id="rotateOverlay" role="dialog" aria-modal="true" aria-labelledby="rotateTitle" aria-describedby="rotateDescription rotateMatchNote" hidden>
-    <div class="rotate-card">
-      <div class="rotate-kicker"><span class="rotate-pulse"></span> CHOGPIT // PHONE MODE</div>
-      <div class="rotate-art" aria-hidden="true"><span class="rotate-device"><span>✦</span></span><span class="rotate-arrow">↻</span></div>
-      <h2 id="rotateTitle">TURN YOUR PHONE<br /><em>SIDEWAYS.</em></h2>
-      <p id="rotateDescription">The pit plays in landscape. Rotate your phone to jump in. If the screen stays upright, switch off rotation lock.</p>
-      <p class="rotate-match-note" id="rotateMatchNote">SOLO PRACTICE PAUSES WHILE YOU ROTATE</p>
-      <button class="rotate-menu-button" id="rotateMenuButton" type="button">BACK TO MENU <span>↗</span></button>
-    </div>
-  </div>
-  <script type="module" src="/app.js"></script>
-</body>
-</html>
+    <div class="controls-strip" style="margin-top:8px;display:flex;justify-content:space-between;font:900 7px system-ui;background:#fffdf3;border:2px solid #111;border-radius:8px;padding:6px"><span>WASD MOVE</span><span>CLICK FIRE</span><span>E LOOT</span><span>SPACE DASH</span></div>
+    <div style="display:none"><section class="nft-entry"><span id="nftEntryTitle"></span><div class="pit-dossier"><img id="pitDossierArt"/><small id="pitDossierKicker"></small><h2 id="pitDossierTitle"></h2><p id="pitDossierOwner"></p><p id="pitDossierTraits"></p><span id="pitDossierRoute"></span><span id="pitDossierTraps"></span><span id="pitDossierRaids"></span><span id="pitDossierClears"></span><span id="pitDossierScars"></span><p id="pitDossierChronicle"></p><span id="pitRecentLabel"></span><ol id="pitRecentRuns"></ol><button id="sharePitButton"></button></div><button id="playButton"></button></section><section class="hero-entry"><div id="heroGrid"></div><div id="heroActive"></div></section><section class="pass-entry"><div id="passArtSerial"></div><h2 id="passEntryTitle"></h2><button id="passPreviewButton"></button><button id="passMintButton"></button><p id="passPreviewStatus"></p></section><div id="raidCard"></div><p id="previewBalance"></p><div id="claimBadge"></div><p id="claimExplanation"></p><button id="refreshClaimStatus"></button><div id="privyPayoutAddr"></div><div id="fundPanel"><span id="sponsorAddr"></span><span id="vaultAddr"></span><div id="fundStatus"></div></div><span id="pitDossierRoute"></span></div></div>
+</div>
+<div class="room-shade" id="roomOverlay" hidden><section class="room-card"><span id="roomKicker">ROOM</span><h2 id="roomTitle">CREW</h2><p id="roomStatus"></p><div class="room-code-line"><strong id="roomCode">······</strong><button id="copyRoomLink">COPY ↗</button></div><small id="roomArena"></small><div id="roomModeChooser" hidden><button data-room-mode="pvp" id="roomModePvp">⚔ PvP</button><button data-room-mode="coop" id="roomModeCoop">✦ Co-op</button><small id="roomModeHint"></small></div><div id="roomPlayers"></div><button id="roomStartButton" disabled>START ↗</button><button id="roomResumeButton" hidden>RETURN ↗</button><button id="roomLeaveButton">LEAVE</button></section></div>
+<div class="result-shade" id="resultOverlay" hidden><div class="result-card"><span id="resultKicker"></span><h2 id="resultTitle"></h2><p id="resultDescription"></p><div class="result-stats"><div><b id="resultKills"></b><span>ELIMS</span></div><div><b id="resultLoot"></b><span>SUP</span></div><div><b id="resultTime"></b><span>TIME</span></div><div><b id="resultScore"></b><span>SCORE</span></div></div><div id="resultPayout"></div><div id="mutationPicker"><span id="scarLabel">LEAVE SCAR</span><div><button data-mark="acid" class="selected">ACID</button><button data-mark="static">STATIC</button><button data-mark="spores">SPORES</button></div></div><button id="resultButton">CLAIM</button><button id="retryButton">RETRY</button><button id="resultMenuButton">MENU</button></div></div>
+<div class="respawn-shade" id="respawnOverlay" hidden><div class="respawn-card"><span>DOWNED</span><p><strong id="respawnTime">3s</strong></p><small id="respawnLives"></small><button id="respawnRoomButton">MENU</button></div></div>
+<div class="pause-shade" id="pauseOverlay" hidden><div class="pause-card"><span>PAUSED</span><button id="resumeButton">RESUME</button><button id="pauseMenuButton">LEAVE</button></div></div>
+<div class="panel-scrim" id="panelScrim" hidden></div><aside class="side-panel builder-panel" id="builderPanel" hidden><div class="panel-head"><span>BUILDER</span><button id="closeBuilder">×</button></div><h2>MAKE THE PIT</h2><div class="owner-box"><img id="ownerArt"/><div><small>ARENA</small><strong id="builderArenaName">#DEMO</strong><span id="verificationStatus"></span></div></div><button id="verifyButton">VERIFY ↗</button><div class="trap-heading"><span id="trapCount"></span></div><div class="trap-list"><button data-trap="turret" class="selected"><b>⌖</b><span>TURRET</span></button><button data-trap="mine"><b>✸</b><span>MINE</span></button><button data-trap="slime"><b>◉</b><span>SLIME</span></button><button data-trap="pulse"><b>ϟ</b><span>PULSE</span></button></div><div class="panel-actions"><button id="undoTrapButton">UNDO</button><button id="saveArenaButton">SAVE ↗</button></div><p id="builderNote"></p></aside>
+<aside class="side-panel locker-panel" id="lockerPanel" hidden><div class="panel-head"><span>LOCKER</span><button id="closeLocker">×</button></div><div class="crate-tile"><span>▣</span><div><strong id="crateCount">0</strong><small>CRATES</small></div></div><div class="career-tile"><div><small>REP</small><strong id="lockerRep">0</strong></div><div><small>BEST</small><strong id="lockerBest">0</strong></div></div><button id="openCrateButton" disabled>OPEN</button><div id="equippedMod"></div><button id="cycleModButton" disabled>SWAP</button><p id="collectionCount"></p></aside>
+<div class="crate-modal-wrap" id="crateModal" hidden><div class="crate-modal"><button id="closeCrateModal">×</button><span id="resultKicker"></span><div id="rewardSigil"></div><span id="rewardRarity"></span><h2 id="crateModalTitle"></h2><p id="rewardDescription"></p><button id="claimRewardButton">BACK</button></div></div><div class="toast" id="toast" hidden></div><div class="rotate-shade" id="rotateOverlay" hidden><div class="rotate-card"><h2>TURN SIDEWAYS</h2><p>Play in landscape</p><button id="rotateMenuButton">MENU</button></div></div>
+</main>
+<script type="module" src="/app.js"></script>
+<script type="module">
+const holderCard=document.getElementById('holderVaultCard'), locked=document.getElementById('holderLocked');
+async function checkHolder(){ const w=localStorage.getItem('chogpit.wallet'); if(!w){ holderCard.hidden=true; locked.hidden=false; return;} try{ const r=await fetch('/api/nft/verify?wallet='+w); const j=await r.json(); if(j.isHolder){ holderCard.hidden=false; locked.hidden=true; document.getElementById('gameModeLabel').textContent='HOLDER #'+j.tokenId+' · VAULT';} else {holderCard.hidden=true; locked.hidden=false;}}catch{}}
+checkHolder();
+</script>
+</body></html>
