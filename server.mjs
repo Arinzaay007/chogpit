@@ -282,17 +282,30 @@ async function handleApi(req, res, url) {
     const claimedIds=new Set(Object.values(ledger).map(v=>v.tokenId));
     if(claimedIds.size>=40) return fail(res,423,'All 40 replicas claimed');
     let heroId=Math.floor(Number(body.heroId))||0; if(heroId<1||heroId>40||claimedIds.has(heroId)){ for(let i=1;i<=40;i++) if(!claimedIds.has(i)){ heroId=i; break;}}
-    // If sponsor key present, mint on-chain to wallet (sponsor pays gas) — prevents double-claim on-chain
+    // Real mint: recipient signs EIP-712 Claim(recipient,nonce,deadline), sponsor pays gas
     const sponsorKey=process.env.SPONSOR_PRIVATE_KEY || process.env.PRIVATE_KEY;
-    const passAddr=process.env.RAIDER_PASS_ADDRESS || '0x6655f23193142cC1E323522C363a52CDea8e3ce2';
+    const passAddr=getAddress(process.env.RAIDER_PASS_ADDRESS || '0x6655f23193142cC1E323522C363a52CDea8e3ce2');
     let txHash=null, onChain=false;
     if(sponsorKey){
+      if(!body.signature || !body.deadline) return fail(res,400,'Missing signature — sign the free consent in wallet (sponsor pays gas, 1 per wallet)');
       try{
-        // HACKATHON BYPASS: on-chain mint via EIP-712 blocked (0x8964e19b) — use off-chain reserve for play, sponsor batch mints 40 later via Remix ownerMintBatch
-        // Keep claimed ledger for CLAIMED grey + Holder Vault, skip on-chain tx to avoid revert
-        txHash=null; onChain=false;
-      }catch(e){ console.error('on-chain mint failed', e); return fail(res, 500, `On-chain mint failed: ${e.shortMessage||e.message}. Check sponsor MON balance.`); }
-    }
+        const { createWalletClient } = await import('viem');
+        const { privateKeyToAccount } = await import('viem/accounts');
+        const { monad } = await import('viem/chains');
+        const acct=privateKeyToAccount((sponsorKey.startsWith('0x')?sponsorKey:'0x'+sponsorKey).trim());
+        const walletClient=createWalletClient({account:acct, chain:monad, transport: viemHttp('https://rpc.monad.xyz')});
+        const abiMint=parseAbi(['function mintWithConsent(address recipient,uint256 deadline,bytes signature) returns (uint256)','function nonces(address) view returns (uint256)']);
+        const deadline=BigInt(body.deadline);
+        if(deadline < BigInt(Math.floor(Date.now()/1000))) return fail(res,400,'Signature expired — try again');
+        txHash=await walletClient.writeContract({ address: passAddr, abi: abiMint, functionName:'mintWithConsent', args:[getAddress(wallet), deadline, body.signature]});
+        // wait for receipt to get tokenId via totalSupply
+        const receipt=await client.waitForTransactionReceipt({hash: txHash}).catch(()=>null);
+        onChain=true;
+        if(receipt && receipt.status==='reverted') throw new Error('Mint reverted — already claimed or bad signature (0x8964e19b)');
+        // update heroId to on-chain tokenId if we can read totalSupply
+        try{ const ts=await client.readContract({address: passAddr, abi: parseAbi(['function totalSupply() view returns (uint256)']), functionName:'totalSupply'}); heroId=Number(ts); }catch{}
+      }catch(e){ console.error('on-chain mint failed', e); return fail(res, 500, `On-chain mint failed: ${e.shortMessage||e.message} — Already claimed? 1 per wallet.`); }
+    }else return fail(res,500,'No sponsor key set — cannot mint on-chain');
     ledger[key]={tokenId: heroId, wallet, heroId, claimedAt: new Date().toISOString(), txHash};
     await mkdir(path.dirname(ledgerFile),{recursive:true}); await writeFile(ledgerFile, JSON.stringify(ledger,null,2));
     return json(res,200,{tokenId: heroId, wallet, onChain, txHash, sponsorPaysGas: true, chainId:143, contract: passAddr});
