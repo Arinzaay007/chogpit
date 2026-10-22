@@ -240,8 +240,11 @@ function openLocker() {
   state.panel = 'locker'; updateLocker();
 }
 function showLobby() {
-  if (state.live) return showRoomScreen();
-  state.mode = 'lobby'; closePanel(); releaseInteract(); game.setPreview();
+  // always allow BACK TO MENU even after death — never get stuck
+  try{ if(state.live) { const ws=state.live.ws; state.live=null; try{ws&&ws.close();}catch{} } }catch{}
+  try{ game && game.setPreview && game.setPreview(); }catch{}
+  try{ $('resultOverlay').hidden = true; $('gameHud').hidden = true; $('pauseOverlay').hidden = true; $('respawnOverlay').hidden = true; $('roomOverlay').hidden = true; $('panelScrim').hidden = true; $('builderPanel').hidden = true; $('lockerPanel').hidden = true; }catch{}
+  state.mode = 'lobby'; try{closePanel();}catch{} releaseInteract();
   document.body.classList.remove('live-active'); $('roomOverlay').hidden = true; $('liveScoreboard').hidden = true;
   $('respawnOverlay').hidden = true;
   $('matchLabel').textContent = 'FREE BOT PLAYTEST'; $('pauseButton').innerHTML = 'Ⅱ <span>PAUSE</span>';
