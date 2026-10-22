@@ -229,6 +229,15 @@ async function handleApi(req, res, url) {
     const claimedIds=Object.values(ledger).map(v=>v.tokenId);
     return json(res,200,{claimedIds, total: claimedIds.length, max:40});
   }
+  if (pathname === '/api/pass/nonce' && req.method === 'GET') {
+    const w=url.searchParams.get('wallet'); let addr; try{ addr=getAddress(w);}catch{ return fail(res,400,'Invalid wallet');}
+    const passAddr=getAddress(process.env.RAIDER_PASS_ADDRESS||'0x6655F23193142CC1E323522C363A52Cdea8E3CE2');
+    try{
+      const abi=parseAbi(['function nonces(address) view returns (uint256)']);
+      const n=await client.readContract({address: passAddr, abi, functionName:'nonces', args:[addr]}).catch(()=>0n);
+      return json(res,200,{wallet:addr, nonce: n.toString()});
+    }catch{ return json(res,200,{wallet:addr, nonce:'0'}); }
+  }
   if (pathname === '/api/pass/claim' && req.method === 'POST') {
     let body; try{ body=await bodyJson(req);}catch{ return fail(res,400,'Invalid JSON');}
     let wallet; try{ wallet=getAddress(body.wallet);}catch{ return fail(res,400,'Connect wallet first');}
@@ -250,17 +259,11 @@ async function handleApi(req, res, url) {
         const account=privateKeyToAccount(sponsorKey.startsWith('0x')?sponsorKey:'0x'+sponsorKey);
         const walletClient=createWalletClient({ account, chain, transport: viemHttp('https://rpc.monad.xyz')});
         const abiClaim=parseAbi(['function mintWithConsent(address recipient,uint256 deadline,bytes signature) returns (uint256)','function everClaimed(address) view returns (bool)','function totalSupply() view returns (uint256)','function nonces(address) view returns (uint256)']);
-        // Check not already claimed on-chain
         const already=await client.readContract({address: getAddress(passAddr), abi: abiClaim, functionName:'everClaimed', args:[wallet]}).catch(()=>false);
         if(already) return fail(res,409,'This wallet already owns a Pass on-chain');
-        // EIP-712 claim: Claim(address recipient,uint256 nonce,uint256 deadline)
-        const nonce=await client.readContract({address: getAddress(passAddr), abi: abiClaim, functionName:'nonces', args:[wallet]}).catch(()=>0n);
-        const deadline=BigInt(Math.floor(Date.now()/1000)+3600);
-        const { signTypedData } = await import('viem/accounts');
-        // Use walletClient signing via account
-        const domain={name:'CHOGPIT Raider Pass', version:'1', chainId:143, verifyingContract: getAddress(passAddr)};
-        const types={ Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}]};
-        const signature=await account.signTypedData({ domain, types, primaryType:'Claim', message:{recipient: wallet, nonce, deadline}});
+        const deadline=body.deadline ? BigInt(body.deadline) : BigInt(Math.floor(Date.now()/1000)+3600);
+        const signature=body.signature;
+        if(!signature || typeof signature!=='string' || !signature.startsWith('0x')) return fail(res,400,'Sign the free consent in your wallet (no gas) — signature missing');
         txHash=await walletClient.writeContract({ address: getAddress(passAddr), abi: abiClaim, functionName:'mintWithConsent', args:[wallet, deadline, signature]});
         onChain=true;
       }catch(e){ console.error('on-chain mint failed', e); return fail(res, 500, `On-chain mint failed: ${e.shortMessage||e.message}. Check sponsor MON balance.`); }

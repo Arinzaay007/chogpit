@@ -55,19 +55,30 @@ document.getElementById('claimBtn').onclick=async()=>{
   if(!sel) return;
   const wallet = localStorage.getItem('chogpit.wallet');
   if(!wallet){ alert('Connect wallet first'); location.href='/'; return; }
-  const btn=document.getElementById('claimBtn'); btn.textContent='MINTING TO '+wallet.slice(0,6)+'... →'; btn.disabled=true;
-  document.getElementById('status').textContent='Signing free claim (sponsor pays gas)…';
+  const btn=document.getElementById('claimBtn'); btn.textContent='SIGNING…'; btn.disabled=true;
+  document.getElementById('status').textContent='Sign free consent (sponsor pays gas)…';
   try{
     const existing=localStorage.getItem('chogpit.claimToken:'+wallet.toLowerCase());
     if(existing){ const data={...sel, id:Number(existing), wallet, claimedAt:new Date().toISOString(), onChain:true}; localStorage.setItem('chogpit.hero', JSON.stringify(data)); localStorage.setItem('chogpit.heroId', String(data.id)); localStorage.setItem('chogpit.passHolder','1'); localStorage.setItem('chogpit.credit','0'); btn.textContent='ALREADY CLAIMED #'+data.id+' → ENTERING PIT…'; setTimeout(()=> location.href='/game.html', 600); return; }
-    const r=await fetch('/api/pass/claim',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet, heroId: sel.id})});
+    // EIP-712 sign as YOU (recipient) — free, no gas
+    const passAddr='0x6655F23193142CC1E323522C363A52Cdea8E3CE2';
+    const nonceRes=await fetch('/api/pass/nonce?wallet='+wallet).then(r=>r.json()).catch(()=>({nonce:0}));
+    const nonce=nonceRes.nonce ?? 0;
+    const deadline=Math.floor(Date.now()/1000)+3600;
+    const domain={name:'CHOGPIT Raider Pass', version:'1', chainId:143, verifyingContract: passAddr};
+    const types={ Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}]};
+    const message={recipient: wallet, nonce: BigInt(nonce).toString(), deadline: BigInt(deadline).toString()};
+    // Request signature from YOUR wallet (auto pop)
+    const signature=await window.ethereum.request({method:'eth_signTypedData_v4', params:[wallet, JSON.stringify({domain, types, primaryType:'Claim', message})]});
+    btn.textContent='MINTING TO '+wallet.slice(0,6)+'... →';
+    const r=await fetch('/api/pass/claim',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet, heroId: sel.id, deadline, signature})});
     const j=await r.json();
     if(!r.ok) throw Error(j.error || 'Claim failed');
     const tokenId=j.tokenId || sel.id;
-    const data={...sel, id: tokenId, wallet, claimedAt:new Date().toISOString(), onChain: j.onChain ?? false, txHash: j.txHash || null};
+    const data={...sel, id: tokenId, wallet, claimedAt:new Date().toISOString(), onChain: j.onChain ?? true, txHash: j.txHash || null};
     localStorage.setItem('chogpit.hero', JSON.stringify(data)); localStorage.setItem('chogpit.heroId', String(tokenId)); localStorage.setItem('chogpit.claimToken:'+wallet.toLowerCase(), String(tokenId)); localStorage.setItem('chogpit.passHolder','1'); localStorage.setItem('chogpit.credit','0');
-    document.getElementById('status').textContent = j.onChain ? `Minted CHOG #${tokenId} to ${wallet.slice(0,6)}... — entering pit` : `Reserved CHOG #${tokenId} for ${wallet.slice(0,6)}... (sponsor will mint) — entering pit`;
+    document.getElementById('status').textContent = j.txHash ? `Minted #${tokenId} tx ${j.txHash.slice(0,10)}… — entering pit` : `Reserved #${tokenId} — entering pit`;
     btn.textContent='CLAIMED #'+tokenId+' ✓ ENTERING PIT…';
-    setTimeout(()=> location.href='/game.html', 700);
-  }catch(e){ btn.disabled=false; btn.textContent=`CLAIM ${sel.name.toUpperCase()} #${sel.id} → ENTER PIT`; document.getElementById('status').textContent=e.message; alert(e.message); }
+    setTimeout(()=> location.href='/game.html', 800);
+  }catch(e){ btn.disabled=false; btn.textContent=`CLAIM ${sel.name.toUpperCase()} #${sel.id} → ENTER PIT`; document.getElementById('status').textContent=e.message; if(!e.message.includes('User denied')) alert(e.message); }
 };
