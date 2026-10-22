@@ -861,13 +861,18 @@ function stopFiring(event){
 };
 shootButton = $('shootButton');
 if(shootButton){
-shootButton.addEventListener('pointerdown', e => {
-  if (firePointerId !== null || !['play', 'online'].includes(game.mode)) return;
+const startFire = e => {
+  if (!['play', 'online'].includes(game.mode)) return;
   e.preventDefault(); e.stopPropagation(); audio.unlock();
-  firePointerId = e.pointerId; shootButton.setPointerCapture(e.pointerId);
-  shootButton.classList.add('active'); game.setFiring(true, e.pointerType === 'touch');
-});
-for (const event of ['pointerup', 'pointercancel', 'lostpointercapture']) shootButton.addEventListener(event, stopFiring);
+  try{ shootButton.setPointerCapture(e.pointerId);}catch{}
+  firePointerId = e.pointerId; shootButton.classList.add('active'); game.setFiring(true, true);
+  // keep firing even if pointerId check fails on some mobiles
+  setTimeout(()=>{ if(shootButton.classList.contains('active')) game.setFiring(true,true); }, 60);
+};
+shootButton.addEventListener('pointerdown', startFire);
+shootButton.addEventListener('touchstart', startFire, {passive:false});
+shootButton.addEventListener('click', e=>{ if(['play','online'].includes(game.mode)){ e.preventDefault(); game.setFiring(true,true); setTimeout(()=>game.setFiring(false),120); game.firePlayer?.(); }});
+for (const event of ['pointerup', 'pointercancel', 'lostpointercapture', 'touchend', 'touchcancel']) shootButton.addEventListener(event, stopFiring);
 window.addEventListener('blur', stopFiring);
 }
 if($('touchDash')) $('touchDash').addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); game.dash(); });
