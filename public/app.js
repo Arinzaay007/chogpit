@@ -425,8 +425,8 @@ async function claimRun() {
   if(w && summary.won){
     const roll=Math.random(); const delta= roll<0.70?5: roll<0.95?10:25;
     fetch('/api/chog/credit',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet:w, delta, runId: state.id+'-'+Date.now()})}).then(r=>r.json()).then(r=>{
-      if(r.payoutHash) toast(`💰 REAL 50 CHOG SENT → ${w.slice(0,6)}… tx ${r.payoutHash.slice(0,10)}…`, false);
-      else if(r.balance!==undefined) toast(`+${delta} CHOG → ${r.balance}/50 until REAL 50 CHOG (holder)`, false);
+      if(r.payoutHash) toast(`💰 +${r.delta||delta} CHOG SENT → ${w.slice(0,6)}… tx ${r.payoutHash.slice(0,10)}…`, false);
+      else if(r.balance!==undefined) toast(`+${delta} CHOG earned`, false);
     }).catch(()=>{});
   }
   state.crates += payout.crates; state.rep += payout.score;
@@ -704,8 +704,8 @@ function handleLiveMessage(message) {
     if(w && message.summary?.won){
       const roll=Math.random(); const delta= roll<0.70?5: roll<0.95?10:25;
       fetch('/api/chog/credit',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet:w, delta, runId: 'live-'+Date.now()})}).then(r=>r.json()).then(r=>{
-        if(r.payoutHash) toast(`💰 REAL 50 CHOG SENT → ${w.slice(0,6)}… tx ${r.payoutHash.slice(0,10)}…`, false);
-        else if(r.balance!==undefined) toast(`+${delta} REAL CHOG → ${r.balance}/50 until 50 CHOG payout (holder)`, false);
+        if(r.payoutHash) toast(`💰 +${r.delta||delta} CHOG SENT → ${w.slice(0,6)}… tx ${r.payoutHash.slice(0,10)}…`, false);
+        else if(r.balance!==undefined) toast(`+${delta} CHOG earned`, false);
       }).catch(()=>{});
     }
     showResult(message.summary, { live: true, payout: message.payout });
