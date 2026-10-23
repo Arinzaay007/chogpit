@@ -22,7 +22,7 @@ h1 .gold{background:linear-gradient(90deg,#ffd60a,#ffec47);-webkit-background-cl
   <img class="gun" src="/assets/chog-gun-cut.png" alt=""/>
   <img class="loot" src="/assets/chog-loot-cut.png" alt=""/>
   <div class="center">
-    <div class="chip" style="border-radius:999px;padding:6px 12px;margin:0 auto 12px;display:inline-flex;gap:6px"><span style="width:8px;height:8px;background:#ef4444;border-radius:50%;display:inline-block"></span> SEASON 3 · “VAULT SEASON” LIVE ON MONAD</div>
+    <div class="chip" style="border-radius:999px;padding:6px 12px;margin:0 auto 12px;display:inline-flex;gap:6px"><span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block"></span> MONAD 143 · VAULT LIVE · INSTANT PAYOUTS</div>
     <h1>BRING A GUN.<br><span class="gold">STEAL THE LOOT.</span></h1>
     <p class="sub">Every <b style="color:#a3e635">Chog Genesis NFT</b> is a deed to a raidable pit on Monad. Defend yours. Breach theirs. Extract — and leave a <b style="color:#c084fc">scar</b> behind.</p>
     <div class="cta">
@@ -31,14 +31,14 @@ h1 .gold{background:linear-gradient(90deg,#ffd60a,#ffec47);-webkit-background-cl
     </div>
     <div id="walletStatus" style="margin-top:10px;font:700 11px system-ui;color:#a3e635;min-height:16px"></div>
     <div class="chips">
-      <span class="chip"><b>412</b> RAIDERS IN PIT</span><span class="chip"><b>50,000 $CHOG</b> SEASON POOL</span><span class="chip">S3 ENDS <b id="cd">11d 07:23:00</b></span>
+      <span class="chip">⚡ MONAD 143 LIVE</span><span class="chip">🎮 1,969 PITS RAIDABLE</span><span class="chip">💰 40 PASSES · EARN WHILE YOU PLAY</span>
     </div>
   </div>
 </section>
 <div class="ticker"><span id="ticker">0x71c…f3a9 RAIDED #0001 → +250 LOOT · 0x03b…8c11 RAIDED #1969 → LEFT SCAR · 0xae9… RAIDED #0002 → +310 LOOT · </span></div>
 <script>
 document.getElementById('cd').textContent='11d 07:23:00';
-fetch('/api/pass/claims').then(r=>r.json()).then(j=>{ const c=j.claimedIds?.length||0; document.getElementById('ticker').textContent=`${c}/40 CLAIMED · ${40-c} FREE · ${c} RAIDERS IN PIT · 50,000 $CHOG POOL · `; }).catch(()=>{});
+fetch('/api/pass/claims').then(r=>r.json()).then(j=>{ const c=j.claimedIds?.length||0; document.getElementById('ticker').textContent=`${c}/40 CLAIMED · ${40-c} FREE · VAULT LIVE · SPONSOR PAYS GAS · EARN WITH YOUR NFT · `; }).catch(()=>{});
 const btn=document.getElementById('connectBtn'), st=document.getElementById('walletStatus');
 const w=localStorage.getItem('chogpit.wallet'); if(w) { btn.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4); st.textContent='Connected — pick your fighter →'; }
 btn.onclick=async()=>{
