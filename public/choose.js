@@ -6,6 +6,7 @@ const grid=document.getElementById('grid'); let sel=null;
 let claimedSet=new Set();
 // Wallet guard for choose.html
 const walletBtn=document.getElementById('connectWalletBtn'), walletAddrEl=document.getElementById('walletAddr'), holderNote=document.getElementById('holderNote');
+function getAddress(a){ return a; } // viem getAddress not needed for sign, keep checksum via wallet
 function refreshWalletUI(){
   const w=localStorage.getItem('chogpit.wallet');
   if(w){ walletAddrEl.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4)+' (Monad 143)'; walletBtn.textContent='✓ CONNECTED'; walletBtn.disabled=true; }
@@ -53,10 +54,14 @@ function renderGrid(){
 
 document.getElementById('claimBtn').onclick=async()=>{
   if(!sel) return;
-  const wallet = localStorage.getItem('chogpit.wallet');
-  if(!wallet){ alert('Connect wallet first'); location.href='/'; return; }
+  let wallet = localStorage.getItem('chogpit.wallet');
+  if(!wallet && window.ethereum){
+    try{ const a=await window.ethereum.request({method:'eth_requestAccounts'}); wallet=a[0]; localStorage.setItem('chogpit.wallet',wallet); }catch(e){ alert('Connect wallet: '+e.message); return; }
+  }
+  if(!wallet){ alert('Connect wallet first'); return; }
   const btn=document.getElementById('claimBtn'); btn.textContent='SIGNING…'; btn.disabled=true;
-  document.getElementById('status').textContent='Sign free consent (sponsor pays gas, 1 per wallet)…';
+  document.getElementById('status').textContent='Check wallet for SIGN — sponsor pays gas…';
+  console.log('CLAIM start',wallet,sel.id);
   try{
     const existing=localStorage.getItem('chogpit.claimToken:'+wallet.toLowerCase());
     if(existing){ const data={...sel, id:Number(existing), wallet, claimedAt:new Date().toISOString(), onChain:true}; localStorage.setItem('chogpit.hero', JSON.stringify(data)); localStorage.setItem('chogpit.heroId', String(data.id)); localStorage.setItem('chogpit.passHolder','1'); localStorage.setItem('chogpit.credit','0'); btn.textContent='ALREADY CLAIMED #'+data.id+' → ENTERING PIT…'; setTimeout(()=> location.href='/game.html', 600); return; }
@@ -66,13 +71,21 @@ document.getElementById('claimBtn').onclick=async()=>{
     const deadline = String(BigInt(Math.floor(Date.now()/1000)+3600*24));
     const typedData = {
       domain: { name:'CHOGPIT Raider Pass', version:'1', chainId:143, verifyingContract:'0x6655f23193142cC1E323522C363a52CDea8e3ce2' },
-      types: { Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}] },
+      types: { EIP712Domain:[{name:'name',type:'string'},{name:'version',type:'string'},{name:'chainId',type:'uint256'},{name:'verifyingContract',type:'address'}], Claim:[{name:'recipient',type:'address'},{name:'nonce',type:'uint256'},{name:'deadline',type:'uint256'}] },
       primaryType:'Claim',
-      message: { recipient: wallet, nonce: nj.nonce, deadline }
+      message: { recipient: getAddress(wallet), nonce: nj.nonce, deadline }
     };
     btn.textContent='SIGN IN WALLET…';
-    document.getElementById('status').textContent='Approve free signature in wallet — sponsor pays gas…';
-    const signature = await window.ethereum.request({ method:'eth_signTypedData_v4', params:[wallet, JSON.stringify(typedData)] });
+    document.getElementById('status').textContent='Approve SIGN in MetaMask (free, sponsor pays gas) — check popup…';
+    let signature;
+    try{
+      signature = await window.ethereum.request({ method:'eth_signTypedData_v4', params:[wallet, JSON.stringify(typedData)] });
+    }catch(e){
+      // fallback for wallets using eth_signTypedData
+      if(e.code===4001) throw Error('You rejected SIGN — need 1 free sign for 1 per wallet');
+      try{ signature = await window.ethereum.request({ method:'eth_signTypedData', params:[wallet, typedData] }); }catch(e2){ throw e; }
+    }
+    console.log('signed',signature.slice(0,20));
     btn.textContent='MINTING #'+sel.id+'…';
     const r=await fetch('/api/pass/claim',{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({wallet, heroId: sel.id, deadline, signature})});
     const j=await r.json();
