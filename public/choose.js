@@ -14,15 +14,18 @@ function refreshWalletUI(){
   if(!w && sel) { const cb=document.getElementById('claimBtn'); if(cb){ cb.disabled=true; cb.textContent='CONNECT WALLET TO CLAIM →'; } const st=document.getElementById('status'); if(st) st.textContent='Connect wallet first — one claim per wallet'; }
 }
 walletBtn.onclick=async()=>{
+  console.log('wallet click');
+  walletBtn.style.pointerEvents='auto';
   try{
-    if(!window.ethereum){ alert('Install MetaMask'); window.open('https://metamask.io/download/','_blank'); return; }
+    if(!window.ethereum){ alert('No wallet found — install MetaMask/Rabby or paste address manually'); const m=prompt('Paste wallet 0x… to continue (mobile)'); if(m && /^0x[0-9a-fA-F]{40}$/.test(m)){ localStorage.setItem('chogpit.wallet', m); refreshWalletUI(); if(sel){ document.getElementById('claimBtn').disabled=false; }} return; }
+    walletBtn.textContent='CONNECTING...';
     const a=await window.ethereum.request({method:'eth_requestAccounts'}); localStorage.setItem('chogpit.wallet', a[0]); localStorage.removeItem('chogpit.guest');
     try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}]});}
     refreshWalletUI();
-    // re-enable claim if selection exists
     if(sel){ document.getElementById('claimBtn').disabled=false; document.getElementById('claimBtn').textContent=`CLAIM ${sel.name.toUpperCase()} #${sel.id} → ENTER PIT`; }
-  }catch(e){ alert(e.message); }
+  }catch(e){ console.error(e); alert(e.message||'Wallet connect failed — try paste address'); walletBtn.textContent='◈ CONNECT WALLET'; }
 };
+walletBtn.style.pointerEvents='auto'; walletBtn.disabled=false; walletBtn.style.zIndex='999';
 refreshWalletUI();
 // Load claimed list (any wallet) → mark CLAIMED, not clickable
 fetch('/api/pass/claims').then(r=>r.json()).then(j=>{
