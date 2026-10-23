@@ -1,56 +1,30 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>CHOGPIT — BRING A GUN. STEAL THE LOOT. | Monad 143</title><link rel="icon" href="/assets/chogbadge.jpg"/><style>
-*{box-sizing:border-box}body{margin:0;background:#07040e;color:#f1f5f9;font-family:system-ui}
-.hero{position:relative;min-height:100svh;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;background:#07040e}
-.hero img.bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 30%;opacity:.9}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#07040e 0%,transparent 45%,#07040e 95%),linear-gradient(180deg,transparent 60%,#07040e 100%)}
-.gun{position:absolute;left:-4vw;bottom:0;height:92svh;z-index:2;pointer-events:none;filter:drop-shadow(0 0 60px rgba(163,230,53,.28))}
-.loot{position:absolute;right:-4vw;bottom:0;height:88svh;z-index:2;pointer-events:none;filter:drop-shadow(0 0 60px rgba(255,214,10,.3))}
-.center{position:relative;z-index:3;max-width:900px;margin:0 auto;padding:140px 20px 120px;text-align:center}
-h1{font:900 72px/0.95 'Space Grotesk',system-ui;margin:0}
-h1 .gold{background:linear-gradient(90deg,#ffd60a,#ffec47);-webkit-background-clip:text;background-clip:text;color:transparent}
-.sub{margin:16px auto 0;max-width:560px;font:500 15px/1.4 system-ui;color:#e2e8f0}
-.cta{margin:24px auto 0;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
-.btn{height:56px;padding:0 32px;border:3px solid #111;border-radius:10px;font:1000 16px system-ui;cursor:pointer}
-.btn-slime{background:#a3e635;border-color:#a3e635;color:#0f172a;box-shadow:0 6px 0 #111}
-.btn-ghost{background:transparent;border:2px solid rgba(255,214,10,.4);color:#ffd60a}
-.chips{margin:16px auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font:700 10px system-ui}
-.chip{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:6px 10px;border-radius:8px}
-.ticker{background:#a3e635;color:#111;height:36px;display:flex;align-items:center;overflow:hidden;border-top:4px solid #111;border-bottom:4px solid #111;font:800 11px system-ui;white-space:nowrap}
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CHOGPIT — Raid. Loot. Cash Out.</title><link rel="icon" href="/assets/chogbadge.jpg"><link rel="stylesheet" href="/style.css"><style>
+*{box-sizing:border-box} body{margin:0;background:#070a12;color:#eef6ff;font-family:system-ui}
+.hero{position:relative;min-height:600px;display:grid;place-items:center;overflow:hidden;background:radial-gradient(700px 400px at 10% 0%,#7c3aed 0%,transparent 70%),radial-gradient(700px 500px at 90% 90%,#06b6d4 0%,transparent 70%),linear-gradient(180deg,#0b0f1e 0%,#0a1210 100%),url('/assets/chog-gun.png') left -4% bottom -4%/560px no-repeat,url('/assets/chog-loot.png') right -4% bottom -4%/500px no-repeat;padding:28px 16px}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0.06) 0%,rgba(0,0,0,0.45) 100%);pointer-events:none}
+.wrap{position:relative;z-index:1;width:min(720px,96%)}
+.card{background:#fffef6;color:#111;border:3px solid #111;border-radius:16px;box-shadow:10px 10px 0 #111;padding:18px;text-align:center}
+.card h1{font:1000 38px/0.9 'Space Grotesk',system-ui;margin:8px 0} .card h1 em{background:#ffec47;border:2px solid #111;padding:0 8px}
+.eyebrow{display:inline-flex;gap:8px;background:#111;color:#ffec47;border-radius:999px;padding:6px 10px;font:900 8px var(--mono)}
+.big-form{margin-top:12px;display:flex;gap:8px} .big-form input{flex:1;height:50px;border:2px solid #111;border-radius:10px;padding:0 14px;font:700 11px system-ui} .big-form button{height:50px;padding:0 18px;background:#ffec47;border:3px solid #111;border-radius:10px;font:1000 11px var(--mono);box-shadow:0 5px 0 #111;cursor:pointer}
+.links{margin-top:8px;font:700 9px var(--mono)} .links a{color:#111}
+.story{max-width:1020px;margin:12px auto;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 2%}
+.story div{background:#fffef6;color:#111;border:3px solid #111;border-radius:12px;padding:14px;box-shadow:6px 6px 0 #111}
+@media(max-width:760px){.card h1{font-size:30px} .big-form{flex-direction:column} .story{grid-template-columns:1fr}}
 </style></head><body>
-<section class="hero">
-  <img class="bg" src="/assets/arena-bg.jpg" alt=""/>
-  <img class="gun" src="/assets/chog-gun-cut.png" alt=""/>
-  <img class="loot" src="/assets/chog-loot-cut.png" alt=""/>
-  <div class="center">
-    <div class="chip" style="border-radius:999px;padding:6px 12px;margin:0 auto 12px;display:inline-flex;gap:6px"><span style="width:8px;height:8px;background:#22c55e;border-radius:50%;display:inline-block"></span> LIVE ON MONAD · EARN CHOG WITH YOUR NFT</div>
-    <h1>BRING A GUN.<br><span class="gold">STEAL THE LOOT.</span></h1>
-    <p class="sub">Every <b style="color:#a3e635">Chog Genesis NFT</b> is a deed to a raidable pit on Monad. Defend yours. Breach theirs. Extract — and leave a <b style="color:#c084fc">scar</b> behind.</p>
-    <div class="cta">
-      <button id="connectBtn" class="btn btn-slime" style="display:inline-flex;align-items:center;gap:8px">◈ CONNECT WALLET →</button>
-      <a href="/choose.html" class="btn btn-ghost" style="text-decoration:none;display:inline-flex;align-items:center;gap:8px">✦ CLAIM YOUR CHOG #1-40</a>
-    </div>
-    <div id="walletStatus" style="margin-top:10px;font:700 11px system-ui;color:#a3e635;min-height:16px"></div>
-    <div class="chips">
-      <span class="chip">OWN THE PIT</span><span class="chip">RAID THE DEED</span><span class="chip">EARN WITH YOUR NFT</span>
+<div class="hero">
+  <div class="wrap">
+    <div class="card">
+      <span class="eyebrow">✦ CHOGPIT — YOUR FIGHTER IS YOUR NFT</span>
+      <h1>BRING A GUN.<br><em>STEAL THE LOOT.</em></h1>
+      <p style="font:600 10px system-ui;color:#333">40 Chog replica NFTs — pick 1, it’s your fighter. Raid solo or with friends <b>vs BOT / vs EACH OTHER</b>. Hidden boxes hide <b>5 / 10 / 25 CHOG → 50 auto-pay</b> to your connected wallet (holder of 40). Sponsor pays gas.</p>
+      <div id="authMount"></div>
+      <div class="links"><a href="/game.html?guest=1">Guest demo — no wallet needed</a></div>
     </div>
   </div>
-</section>
-<div class="ticker"><span id="ticker">0x71c…f3a9 RAIDED #0001 → +250 LOOT · 0x03b…8c11 RAIDED #1969 → LEFT SCAR · 0xae9… RAIDED #0002 → +310 LOOT · </span></div>
-<script>
-document.getElementById('cd').textContent='11d 07:23:00';
-fetch('/api/pass/claims').then(r=>r.json()).then(j=>{ const c=j.claimedIds?.length||0; document.getElementById('ticker').textContent=`${c}/40 CLAIMED · ${40-c} FREE · OWN THE PIT · EARN WITH YOUR NFT · `; }).catch(()=>{});
-const btn=document.getElementById('connectBtn'), st=document.getElementById('walletStatus');
-const w=localStorage.getItem('chogpit.wallet'); if(w) { btn.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4); st.textContent='Connected — pick your fighter →'; }
-btn.onclick=async()=>{
-  try{
-    if(!window.ethereum){ st.textContent='Install MetaMask / Rabby'; window.open('https://metamask.io/download/','_blank'); return; }
-    btn.textContent='Connecting…';
-    const a=await window.ethereum.request({method:'eth_requestAccounts'});
-    const addr=a[0]; localStorage.setItem('chogpit.wallet', addr); localStorage.removeItem('chogpit.guest');
-    try{ await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId:'0x8f'}]});}catch(e){ if(e.code===4902) await window.ethereum.request({method:'wallet_addEthereumChain', params:[{chainId:'0x8f', chainName:'Monad Mainnet', nativeCurrency:{name:'MON',symbol:'MON',decimals:18}, rpcUrls:['https://rpc.monad.xyz'], blockExplorerUrls:['https://monadscan.com/']}]});}
-    btn.textContent='✓ '+addr.slice(0,6)+'...'+addr.slice(-4); st.textContent='Connected — claim your 1 of 40 →';
-    setTimeout(()=> location.href='/choose.html', 600);
-  }catch(e){ btn.textContent='◈ CONNECT WALLET →'; st.textContent=e.message; }
-};
+</div>
+<div class="story"><div><b>01 RAID SOLO</b><p>Dodge turrets/mines/goo. Find 2 supplies, extract in 3:00, 5 lives. Hum → Press E.</p></div><div><b>02 WITH FRIENDS</b><p>Private 2–4. Host picks <b>vs BOT (co-op)</b> or <b>vs EACH OTHER (PvP)</b>.</p></div><div><b>03 SCARS & CASHOUT</b><p>Clear → leave scar. Boxes credit → <b>50 auto-pay</b> if holder. Sponsor gas.</p></div></div>
+<script type="module">
+import('/landing.js').then(m=> fetch('/api/pass-portal/status').then(r=>r.json()).catch(()=>({registrationReady:false,publicAppId:null})).then(s=> m.mountLanding(s))).catch(()=>{});
 </script>
 </body></html>
