@@ -9,10 +9,9 @@ const walletBtn=document.getElementById('connectWalletBtn'), walletAddrEl=docume
 function getAddress(a){ return a; } // viem getAddress not needed for sign, keep checksum via wallet
 function refreshWalletUI(){
   const w=localStorage.getItem('chogpit.wallet');
-  if(w){ walletAddrEl.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4)+' (Monad 143)'; walletBtn.textContent='✓ CONNECTED'; walletBtn.disabled=true; }
-  else { walletAddrEl.textContent='Not connected — connect to claim (1 per wallet)'; holderNote.textContent=''; }
-  // disable claim if no wallet
-  if(!w && sel) { document.getElementById('claimBtn').disabled=true; document.getElementById('claimBtn').textContent='CONNECT WALLET TO CLAIM →'; document.getElementById('status').textContent='Connect wallet first — one claim per wallet'; }
+  if(w){ if(walletAddrEl) walletAddrEl.textContent='✓ '+w.slice(0,6)+'...'+w.slice(-4)+' (Monad 143)'; if(walletBtn) { walletBtn.textContent='✓ CONNECTED'; walletBtn.disabled=true; } }
+  else { if(walletAddrEl) walletAddrEl.textContent='Not connected — connect to claim (1 per wallet)'; if(holderNote) holderNote.textContent=''; }
+  if(!w && sel) { const cb=document.getElementById('claimBtn'); if(cb){ cb.disabled=true; cb.textContent='CONNECT WALLET TO CLAIM →'; } const st=document.getElementById('status'); if(st) st.textContent='Connect wallet first — one claim per wallet'; }
 }
 walletBtn.onclick=async()=>{
   try{
