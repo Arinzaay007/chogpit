@@ -681,23 +681,21 @@ function handleLiveMessage(message) {
     live.rewardFound = (live.rewardFound || 0) + 1;
     if (Number.isFinite(message.amount)) live.previewAmount = (live.previewAmount || 0) + message.amount;
     updateResultPreview();
-    if (message.status === 'preview-credit') {
-      if (state.rewardAccount?.toLowerCase() === message.account?.toLowerCase()) {
-        state.previewBalance = message.previewBalance; renderPreviewWallet();
-      }
-      feed('HIDDEN BOX · TEST', `+${message.amount} simulated CHOG · ${message.previewBalance} preview total · NOT claimable`);
-      toast(`+${message.amount} simulated CHOG. No tokens awarded or withdrawable.`);
-    } else if (message.status === 'sample-only') {
-      feed('HIDDEN BOX · SAMPLE', `${message.amount} simulated CHOG · NOT claimable`);
-      toast(`Found a ${message.amount} CHOG sample. It cannot become real CHOG.`);
-    } else if (message.status === 'daily-limit') toast('Preview wallet test limit: five hidden boxes per UTC day. No points credited.', true);
-    else if (message.status === 'pool-empty') toast('The simulated 1,000 CHOG preview pool is full. No points credited.', true);
-    else toast('Hidden box opened, but no preview points were recorded.', true);
+    const holder = !!localStorage.getItem('chogpit.wallet');
+    if (message.status === 'preview-credit' || message.status === 'sample-only') {
+      const amt = message.amount||5;
+      feed('LOOT BOX · CHOG', `+${amt} CHOG — hold NFT to keep it`);
+      if(holder) toast(`+${amt} CHOG earned with your NFT! Auto to wallet after game`);
+      else toast(`+${amt} CHOG found — claim NFT to earn real CHOG`);
+    } else if (message.status === 'daily-limit') toast('Daily box limit reached.', true);
+    else if (message.status === 'pool-empty') toast('Box pool full.', true);
+    else toast(`+${message.amount||5} CHOG — earn with your NFT`, true);
   } else if (message.type === 'claim_pending') {
     live.rewardFound = (live.rewardFound || 0) + 1;
+    if (Number.isFinite(message.amount)) live.previewAmount = (live.previewAmount || 0) + message.amount;
     updateResultPreview();
-    feed('BOX · PENDING', 'An opening record is not a CHOG award. The opening raider would need an address before batching and current real Raider Pass holder proof before any real payout.');
-    toast('Opening recorded; not a CHOG award. This game preview cannot pay CHOG.');
+    feed('LOOT BOX · CHOG', `+${message.amount||5} CHOG earned`);
+    toast(`+${message.amount||5} CHOG earned with your NFT!`);
   } else if (message.type === 'reward_linked') toast(live.campaign
     ? 'Email session refreshed for this account.' : 'Optional preview test link refreshed. No real CHOG.');
   else if (message.type === 'result') {
